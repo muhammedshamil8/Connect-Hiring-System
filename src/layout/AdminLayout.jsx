@@ -25,8 +25,10 @@ function AdminLayout() {
     <AuthRoleRequire role="admin">
       <div className='flex items-center justify-end p-2'>
         <nav className='flex items-center gap-4 p-4'>
-          <Link to='/admin/add' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/add' ? 'text-blue-500' : 'text-gray-500'}`}>Add Score</Link>
-          <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link>
+          {userRole === 'admin' && <>
+            <Link to='/admin/add' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/add' ? 'text-blue-500' : 'text-gray-500'}`}>Add Score</Link>
+            <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link></>}
+
           <button onClick={handleOpen} className=' text-red-500 hover:text-red-300 transition-all ease-in-out font-bold py-2 px-4 rounded'>
             <LogOut />
           </button>
