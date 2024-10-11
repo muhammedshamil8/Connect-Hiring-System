@@ -240,7 +240,7 @@ function index() {
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Offilne Event</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'><span className="bg-yellow-700 text-white px-2 md:px-4 py-1 rounded-lg">Pending</span></h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'><span className="bg-orange-700 text-white px-2 md:px-4 py-1 rounded-lg">Pending</span></h1>
                       {/* {studentData.studentInfo?.SELECTION_CAMP_ATTENDED ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>} */}
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>Attendance</h1>
                     </div>
@@ -252,7 +252,7 @@ function index() {
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Task</h1>
                       <h1 className='col-span-1 text-center text-sm sm:text-md'> {studentData.TaskInfo?.Task_Role ? <>Role: {studentData.TaskInfo?.Task_Role}</> : <span className="text-gray-500">N/A</span>}</h1>
-                      <div className='col-span-2 text-center text-sm sm:text-md'>{studentData.TaskInfo?.Task_Link ? <span className="space-x-2">{studentData.TaskInfo?.extra_link ? <a target="_blank" href={studentData.TaskInfo?.extra_link} className="rounded-md px-4 text-white py-1 bg-blue-500">Extra</a> : ''}<a target="_blank" href={studentData.TaskInfo?.Task_Link} className="rounded-md px-4 text-white py-1 bg-blue-500">Open</a></span> : <span className="text-gray-500"> N/A</span>}</div>
+                      <div className='col-span-2 text-center text-sm sm:text-md'>{studentData.TaskInfo?.Task_Link ? <span className="space-x-2">{studentData.TaskInfo?.extra_link ? <a target="_blank" href={studentData.TaskInfo?.extra_link} className="rounded-md px-4 text-white py-1 bg-orange-500">Extra</a> : ''}<a target="_blank" href={studentData.TaskInfo?.Task_Link} className="rounded-md px-4 text-white py-1 bg-orange-500">Open</a></span> : <span className="text-gray-500"> N/A</span>}</div>
                     </div>
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>

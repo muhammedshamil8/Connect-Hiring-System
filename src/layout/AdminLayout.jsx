@@ -38,7 +38,7 @@ function AdminLayout() {
       <div className='flex items-center justify-center gap-4'>
         <img src={Logo} className='w-10 h-10 sm:w-[50px] sm:h-[50px] rounded-full' alt='profile' />
         <div className='flex flex-col items-center justify-center w-fit '>
-          <h1 className='text-xl sm:text-2xl font-bold  text-black'>CONNECT HIRING</h1>
+          <h1 className='text-xl sm:text-2xl font-bold  primary-text'>CONNECT HIRING</h1>
           <h3 className='text-md sm:text-lg font-normal -mt-1 primary-text'>SCORE SYSTEM</h3>
         </div>
       </div>
