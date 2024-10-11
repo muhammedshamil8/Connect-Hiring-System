@@ -47,83 +47,119 @@ function index() {
     setLoading(true);
 
     try {
-      // Fetch from both "Form_Submitted" and "Students" tables in parallel
-      const [formSubmittedRecords, studentRecords] = await Promise.all([
-        base("Form_Submitted")
-          .select({
-            view: "applicant",
-            filterByFormula: `${searchMode === 'chest' ? `{CHEST_NO} = '${search}'` : `{ADMISSION_NUMBER} = '${search}'`}`,
-            maxRecords: 1,  // Limit to a single record
-          })
-          .firstPage(),
+      // Initialize variables for storing fetched data
+      let formSubmittedRecords = [];
+      let studentRecords = [];
+      let taskRecords = [];
 
-        base("Students")
+      // Fetch data from "interns_selection_2025"
+      try {
+        formSubmittedRecords = await base("interns_selection_2025")
+          .select({
+            view: "Applicants",
+            filterByFormula: `${searchMode === 'chest' ? `{CHEST_NO} = '${search}'` : `{Admission_No} = '${search}'`}`,
+            maxRecords: 1,
+          })
+          .firstPage();
+      } catch (error) {
+        console.log("Error fetching interns_selection_2025:", error);
+      }
+
+      // Fetch data from "Scores"
+      try {
+        studentRecords = await base("Scores")
           .select({
             view: "Data",
-            filterByFormula: `${searchMode === 'chest' ? `{CHEST_NO} = '${search}'` : `{ADMISSION_NUMBER} = '${search}'`}`,
-            maxRecords: 1,  // Limit to a single record
+            filterByFormula: `${searchMode === 'chest' ? `{CHEST_NO} = '${search}'` : `{Admission_No} = '${search}'`}`,
+            maxRecords: 1,
           })
-          .firstPage()
-      ]);
+          .firstPage();
+      } catch (error) {
+        console.log("Error fetching Scores:", error);
+      }
 
-      if (formSubmittedRecords.length === 0 && studentRecords.length === 0) {
+      // Fetch data from "Task_Submit"
+      try {
+        taskRecords = await base("Task_Submit")
+          .select({
+            view: "Data",
+            filterByFormula: `${searchMode === 'chest' ? `{CHEST_NO} = '${search}'` : `{Admission_No} = '${search}'`}`,
+            maxRecords: 1,
+          })
+          .firstPage();
+      } catch (error) {
+        console.log("Error fetching Task_Submit:", error);
+      }
+
+      // Check if data is available
+      if (formSubmittedRecords.length === 0 && studentRecords.length === 0 && taskRecords.length === 0) {
         setLoading(false);
         return;
       }
 
       let combinedData = {};
 
-      // Process data from "Form_Submitted"
+      // Process data from "interns_selection_2025"
       if (formSubmittedRecords.length > 0) {
         const formRecord = formSubmittedRecords[0].fields;
         console.log("Form_Submitted record:", formRecord);
 
-        // want to hide
-        const formResponses = Object.keys(formRecord)
-          .filter((key) => !['CHEST_NO', 'Students', 'Timestamp'].includes(key))
-          .map((key) => ({
-            question: key,
-            answer: formRecord[key],
-          }));
+        // const formResponses = Object.keys(formRecord)
+        //   .filter((key) => !['CHEST_NO', 'Task Submit', 'Task_Submitted'].includes(key))
+        //   .map((key) => ({
+        //     question: key,
+        //     answer: formRecord[key],
+        //   }));
 
-        // Store ADMISSION_NUMBER from formResponses
-        const admissionNumber = formRecord['ADMISSION_NUMBER'];
-
+        const admissionNumber = formRecord['Admission_No'];
+        const name = formRecord['Name']
+        const department = formRecord['department']
         combinedData = {
           ...combinedData,
-          formResponses,
+          formResponses: formRecord,
           admissionNumber,
+          name,
+          department
         };
 
         setStudentID(formSubmittedRecords[0].id);
       }
 
-      // Process data from "Students"
+      // Process data from "Scores"
       if (studentRecords.length > 0) {
         const studentRecord = studentRecords[0].fields;
         console.log("Students record:", studentRecord);
 
         combinedData = {
           ...combinedData,
-          studentInfo: studentRecord,  // Store student info directly
+          studentInfo: studentRecord,
         };
 
-        setStudentID(studentRecords[0].id);  // Update student ID if necessary
+        setStudentID(studentRecords[0].id);
+      }
+
+      // Process data from "Task_Submit"
+      if (taskRecords.length > 0) {
+        const taskRecord = taskRecords[0].fields;
+        console.log("Task record:", taskRecord);
+
+        combinedData = {
+          ...combinedData,
+          TaskInfo: taskRecord,
+        };
       }
 
       // Set the combined student data
       setStudentData(combinedData);
       console.log("Combined data:", combinedData);
-      setLoading(false);
 
     } catch (error) {
-      console.error(error);
-      setLoading(false);
+      console.error("Unexpected error:", error);
     } finally {
+      setLoading(false);
       setSearchText("");
     }
   };
-
 
 
   const clearStudentData = () => {
@@ -178,11 +214,11 @@ function index() {
                   <div className="flex items-center justify-center gap-4">
                     <div className='primary-bg  p-3 !text-white text-xl sm:text-2xl font-bold uppercase rounded-2xl'>{studentData.studentInfo?.CHEST_NO}</div>
                     <div className='flex flex-col items-center justify-center'>
-                      <h1 className='text-xl sm:text-3xl font-semibold'>{studentData?.studentInfo?.NAME}</h1>
-                      <p className='-mt-0.5 text-sm sm:text-md'>{studentData.studentInfo?.DEPARTMENT}</p>
+                      <h1 className='text-xl sm:text-3xl font-semibold'>{studentData?.name}</h1>
+                      <p className='-mt-0.5 text-sm sm:text-md'>{studentData.department}</p>
                     </div>
                   </div>
-                  <p className='-mt-0.5 text-sm sm:text-md pt-2 pb-1'>Admission no: {studentData.admissionNumber}</p>
+                  <p className='-mt-0.5 text-sm sm:text-md pt-2 pb-1'>Admission no: {studentData.studentInfo.Admission_No}</p>
                 </div>
               </div>
 
@@ -203,19 +239,20 @@ function index() {
                       <h1 className='col-span-2 text-center'>Opinion</h1>
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Selection camp</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.SELECTION_CAMP_ATTENDED ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>}</h1>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Offilne Event</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'><span className="bg-yellow-700 text-white px-2 md:px-4 py-1 rounded-lg">Pending</span></h1>
+                      {/* {studentData.studentInfo?.SELECTION_CAMP_ATTENDED ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>} */}
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>Attendance</h1>
                     </div>
-                    {/* <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                    <h1 className='col-span-2 text-left text-sm sm:text-md' >Orientation Class</h1>
-                    <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.ORIENTATION_ATTENDED ? 'Present' : 'Absent'}</h1>
-                    <h1 className='col-span-2 text-center text-sm sm:text-md'>Attendance</h1>
-                  </div> */}
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Fund Collected</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>₹{studentData.studentInfo?.FUND_COLLECTED ? studentData.studentInfo?.FUND_COLLECTED : <span className="text-gray-500"> N/A</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{'Collected Amount'}</h1>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Orientation Section</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.Orientation_Attendence ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>Attendance</h1>
+                    </div>
+                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Task</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'> {studentData.TaskInfo?.Task_Role ? <>Role: {studentData.TaskInfo?.Task_Role}</> : <span className="text-gray-500">N/A</span>}</h1>
+                      <div className='col-span-2 text-center text-sm sm:text-md'>{studentData.TaskInfo?.Task_Link ? <span className="space-x-2">{studentData.TaskInfo?.extra_link ? <a target="_blank" href={studentData.TaskInfo?.extra_link} className="rounded-md px-4 text-white py-1 bg-blue-500">Extra</a> : ''}<a target="_blank" href={studentData.TaskInfo?.Task_Link} className="rounded-md px-4 text-white py-1 bg-blue-500">Open</a></span> : <span className="text-gray-500"> N/A</span>}</div>
                     </div>
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
@@ -254,15 +291,25 @@ function index() {
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.DEDICATION_GRADE ? studentData.studentInfo?.DEDICATION_GRADE : <span className="text-gray-500">None</span>}</h1>
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Skill & Achievements</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.SKILL_ACHIEVEMENT_GRADE ? studentData.studentInfo?.SKILL_ACHIEVEMENT_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.SKILL_ACHIEVEMENTS ? studentData.studentInfo?.SKILL_ACHIEVEMENTS : <span className="text-gray-500">None</span>}</h1>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Attitude</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.ATITTUDE_GRADE ? studentData.studentInfo?.ATITTUDE_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.ATITTUDE_GRADE ? studentData.studentInfo?.ATITTUDE_GRADE : <span className="text-gray-500">None</span>}</h1>
+                    </div>
+                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Confidence</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.CONFIDENCE_GRADE ? studentData.studentInfo?.CONFIDENCE_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.CONFIDENCE_GRADE ? studentData.studentInfo?.CONFIDENCE_GRADE : <span className="text-gray-500">None</span>}</h1>
+                    </div>
+                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Community knowledge </h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.COMMUNITY_KNOWLEDGE_GRADE ? studentData.studentInfo?.COMMUNITY_KNOWLEDGE_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.COMMUNITY_KNOWLEDGE_GRADE ? studentData.studentInfo?.COMMUNITY_KNOWLEDGE_GRADE : <span className="text-gray-500">None</span>}</h1>
                     </div>
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left' >Overall</h1>
                       <h1 className='col-span-1 text-center'>{studentData.studentInfo?.INTERVIEW_OVERALL_GRADE ? studentData.studentInfo?.INTERVIEW_OVERALL_GRADE : <span className="text-gray-700">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center'>{studentData.studentInfo?.DEDICATION_GRADE ? studentData.studentInfo?.DEDICATION_GRADE : <span className="text-gray-700">None</span>}</h1>
+                      <h1 className='col-span-2 text-center'>{studentData.studentInfo?.INTERVIEW_OVERALL_OPINION ? studentData.studentInfo?.INTERVIEW_OVERALL_OPINION : <span className="text-gray-700">None</span>}</h1>
                     </div>
                   </div>
                 )}
@@ -270,7 +317,7 @@ function index() {
 
               <div className='flex flex-col justify-center w-full items-center mt-10' ref={parent}>
                 <div className="flex items-center justify-center w-full gap-2 mb-6">
-                  <h1 className='primary-text underline underline-offset-2 text-xl sm:text-3xl font-semibold  select-none'>Selection Camp</h1>
+                  <h1 className='primary-text underline underline-offset-2 text-xl sm:text-3xl font-semibold  select-none'>Scores</h1>
                   <div className=''>
                     {<button className={`primary-text font-bold  px-4 py-1.5  rounded-2xl  select-none ${view.selection ? '' : ''}`} onClick={() => toggleView('selection')}>
                       {view.selection ? 'Hide' : 'Show'}
@@ -284,37 +331,37 @@ function index() {
                       <h1 className='col-span-1 text-center'>Grade</h1>
                       <h1 className='col-span-2 text-center'>Opinion</h1>
                     </div>
-                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Debate</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.DEBATE_GRADE ? studentData.studentInfo?.DEBATE_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.DEBATE_OPINION ? studentData.studentInfo?.DEBATE_OPINION : <span className="text-gray-500">None</span>}</h1>
-                    </div>
+
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Group Activity</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_GRADE ? studentData.studentInfo?.GROUP_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_OPINION ? studentData.studentInfo?.GROUP_OPINION : <span className="text-gray-500">None</span>}</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_ACTIVITY_GRADE ? studentData.studentInfo?.GROUP_ACTIVITY_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_ACTIVITY_OPINION ? studentData.studentInfo?.GROUP_ACTIVITY_OPINION : <span className="text-gray-500">None</span>}</h1>
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Stage Group Activity</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.STAGE_GROUP_GRADE ? studentData.studentInfo?.STAGE_GROUP_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.STAGE_GROUP_OPINION ? studentData.studentInfo?.STAGE_GROUP_OPINION : <span className="text-gray-500">None</span>}</h1>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Online Task</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.TASK_GRADE ? studentData.studentInfo?.TASK_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.TASK_OPINION ? studentData.studentInfo?.TASK_OPINION : <span className="text-gray-500">None</span>}</h1>
                     </div>
-                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Stage Performance</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.STAGE_GRADE ? studentData.studentInfo?.STAGE_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.STAGE_OPINION ? studentData.studentInfo?.STAGE_OPINION : <span className="text-gray-500">None</span>}</h1>
-                    </div>
+
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Bonus Points</h1>
                       <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.BONUS_GRADE ? studentData.studentInfo?.BONUS_GRADE : <span className="text-gray-500">Nill</span>}</h1>
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.BONUS_OPINION ? studentData.studentInfo?.BONUS_OPINION : <span className="text-gray-500">None</span>}</h1>
                     </div>
 
+                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Interview Perfomance</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.INTERVIEW_OVERALL_GRADE ? studentData.studentInfo?.INTERVIEW_OVERALL_GRADE : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.INTERVIEW_OVERALL_OPINION ? studentData.studentInfo?.INTERVIEW_OVERALL_OPINION : <span className="text-gray-500">None</span>}</h1>
+                    </div>
+
+
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Overall</h1>
                       <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.OVERALL_GRADE ? studentData.studentInfo?.OVERALL_GRADE : <span className="text-gray-700">Nill</span>}</h1>
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.OVERALL_OPINION ? studentData.studentInfo?.OVERALL_OPINION : <span className="text-gray-700">None</span>}</h1>
                     </div>
+
                   </div>
                 )}
               </div>
@@ -330,17 +377,93 @@ function index() {
                 </div>
                 {view.about && (
                   <div className='w-full'>
-                    {/* <div className='primary-bg text-white font-bold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 select-none'>
-                      <h1 className='col-span-2 text-left text-pink-400' >Question</h1>
-                      <h1 className='col-span-3 text-right'>Response</h1>
-                    </div> */}
-                    {studentData.formResponses ? (studentData.formResponses.map((response, index) => (
-                      <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
-                        <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >{response.question}
-                          <span className="block md:hidden"> :-</span></h1>
-                        <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{response.answer}</h1>
-                      </div>
-                    ))) : (
+                    {studentData.formResponses ? (
+                      <>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            email
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.email}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Phone number
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.Phone_number}</h1>
+                        </div>
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Department
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.department}</h1>
+                        </div>
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Year
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.year} Year</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            How did you hear about Connect?
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.how_did_you_hear}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Preferred role in Connect
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.preferred_role}</h1>
+                        </div>
+                        {studentData.formResponses?.preferred_role === 'Other' && (
+                          <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                            <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                              Please specify your preferred role
+                              <span className="block md:hidden"> :-</span></h1>
+                            <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.custom_role}</h1>
+                          </div>)}
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Tell us something interesting about yourself
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.interesting_fact}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            What are your expectations from Connect?
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.expectations}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Why do you want to be a part of this community?
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.reason}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            What is your hobby?
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.hobby}</h1>
+                        </div>
+
+                        <div key={index} className='bg-stone text-black font-semibold w-full grid md:grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400 grid-cols-1 gap-y-4 md:gap-y-0'>
+                          <h1 className='col-span-2 text-left text-sm sm:text-md flex items-start flex-nowrap text-gray-700 font-normal' >
+                            Are you part of any other community, club, or organization?
+                            <span className="block md:hidden"> :-</span></h1>
+                          <h1 className='col-span-3 text-left text-sm sm:text-md flex justify-end items-end primary-text'>{studentData.formResponses?.other_communities}</h1>
+                        </div>
+                      </>
+
+                    ) : (
                       <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                         <h1 className='col-span-5 text-center text-sm sm:text-md'>No Form Response Data Found</h1>
                       </div>
