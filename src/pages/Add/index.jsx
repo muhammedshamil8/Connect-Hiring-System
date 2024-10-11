@@ -255,7 +255,8 @@ function App() {
     <>
       {userRole === 'admin' ? (
         <div className="flex flex-col items-center px-4 p-2">
-          <div className='flex items-center justify-center w-full mx-auto'>
+          <h2 className="text-2xl font-semibold primary-text">This page is on work</h2>
+          {/* <div className='flex items-center justify-center w-full mx-auto'>
             <div className='mx-auto p-[3px] flex items-center justify-center border border-gray-800 rounded-full w-fit overflow-hidden flex-grow max-w-[600px] '>
               <input type='search' placeholder='Search Chest Number' className='outline-none ring-0 border-none w-full p-2 px-4 '
                 onChange={(e) => setSearchText(e.target.value.toUpperCase())}
@@ -496,43 +497,8 @@ function App() {
             </div>
           )}
 
-          {alert && <div className="text-red-500 mt-4">No student found!</div>}
-
+          {alert && <div className="text-red-500 mt-4">No student found!</div>} */}
           <ToastContainer />
-          {/* <Dialog open={open} handler={handleOpen} className="p-6 rounded-lg shadow-lg bg-white">
-        <DialogHeader>
-          <h5 className="text-2xl font-bold text-gray-800">Score Added Successfully</h5>
-        </DialogHeader>
-
-        <DialogBody>
-          <div className="text-center mb-4">
-            <p className="text-gray-600">The score has been added successfully.</p>
-          </div>
-          <div className="flex justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-12 h-12 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-        </DialogBody>
-
-        <DialogFooter>
-          <Button variant="gradient" color="green" onClick={handleOpen} className="w-full">
-            <span>Thank You</span>
-          </Button>
-        </DialogFooter>
-      </Dialog> */}
-
         </div >
       ) : (
         <div className="flex items-center justify-center w-full h-full mt-8">
