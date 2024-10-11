@@ -45,7 +45,7 @@ function AdminLayout() {
 
       {/* Main Content Area */}
       <div className='flex flex-col min-h-[80vh]'>
-        <main className="max-w-[1300px] mx-auto w-full mt-20 flex-grow">
+        <main className="max-w-[1300px] mx-auto w-full mt-6 md:mt-20 flex-grow">
           <Outlet />
         </main>
         <div className='flex justify-end'>
