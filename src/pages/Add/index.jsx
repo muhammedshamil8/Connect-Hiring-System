@@ -57,27 +57,20 @@ function App() {
 
   // Score states
   const [grades, setGrades] = useState({
-    COMMUNICATION: '',
-    DEDICATION: '',
-    SKILL_ACHIEVEMENT: '',
-    SKILL_ACHIEVEMENT_TEXT: '',
-    INTERVIEW_OVERALL_OPINION: '',
-    INTERVIEW_OVERALL_GRADE: '',
-    DEBATE_SCORE: '',
-    DEBATE_OPINION: '',
-    GROUP_SCORE: '',
-    GROUP_OPINION: '',
-    STAGE_GROUP_GRADE: '',
-    STAGE_GROUP_OPINION: '',
-    STAGE_SCORE: '',
-    STAGE_OPINION: '',
-    OVERALL_OPINION: '',
+    COMMUNICATION_GRADE: '',
+    DEDICATION_GRADE: '',
+    ATITTUDE_GRADE: '',
+    CONFIDENCE_GRADE: '',
+    COMMUNITY_KNOWLEDGE_GRADE: '',
+    CAMP_GRADE_by_volunteer: '',
+    TASK_GRADE: '',
+    TASK_OPINION: '',
     OVERALL_GRADE: '',
+    OVERALL_OPINION: '',
     ORIENTATION_ATTENDED: false,
     SELECTION_CAMP_ATTENDED: false,
     BONUS_GRADE: '',
     BONUS_OPINION: '',
-    FUND_COLLECTED: '',
     SELECTION_RESULT: '...',
   });
 
@@ -103,7 +96,7 @@ function App() {
           }
           setStudentData(record[0].fields);
           setGrades({
-            COMMUNICATION: record[0].fields.COMMUNICATION_GRADE || '',
+            COMMUNICATION_GRADE: record[0].fields.COMMUNICATION_GRADE || '',
             DEDICATION: record[0].fields.DEDICATION_GRADE || '',
             SKILL_ACHIEVEMENT: record[0].fields.SKILL_ACHIEVEMENT_GRADE || '',
             SKILL_ACHIEVEMENT_TEXT: record[0].fields.SKILL_ACHIEVEMENT_TEXT || '',

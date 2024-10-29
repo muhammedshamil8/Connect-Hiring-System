@@ -98,7 +98,7 @@ function index() {
       }
 
       let combinedData = {};
-
+      console.log(formSubmittedRecords, studentRecords, taskRecords);
       // Process data from "interns_selection_2025"
       if (formSubmittedRecords.length > 0) {
         const formRecord = formSubmittedRecords[0].fields;
@@ -240,8 +240,7 @@ function index() {
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Offilne Event</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'><span className="bg-orange-700 text-white px-2 md:px-4 py-1 rounded-lg">Pending</span></h1>
-                      {/* {studentData.studentInfo?.SELECTION_CAMP_ATTENDED ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>} */}
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.TaskInfo?.selection_camp ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Present</span> : <span className="bg-red-500 text-white px-2 md:px-4 py-1 rounded-lg">Absent</span>}</h1>
                       <h1 className='col-span-2 text-center text-sm sm:text-md'>Attendance</h1>
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
@@ -333,9 +332,14 @@ function index() {
                     </div>
 
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Group Activity</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_ACTIVITY_GRADE ? studentData.studentInfo?.GROUP_ACTIVITY_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.GROUP_ACTIVITY_OPINION ? studentData.studentInfo?.GROUP_ACTIVITY_OPINION : <span className="text-gray-500">None</span>}</h1>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Camp</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.CAMP_GRADE_by_volunteer ? studentData.studentInfo?.CAMP_GRADE_by_volunteer : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'><span className="text-gray-500">by Volunteer</span></h1>
+                    </div>
+                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
+                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Camp</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.PRESENTATION_GRADE_by_judge ? studentData.studentInfo?.PRESENTATION_GRADE_by_judge : <span className="text-gray-500">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'><span className="text-gray-500"> by Judge</span></h1>
                     </div>
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Online Task</h1>
@@ -345,16 +349,9 @@ function index() {
 
                     <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Bonus Points</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.BONUS_GRADE ? studentData.studentInfo?.BONUS_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.BONUS_OPINION ? studentData.studentInfo?.BONUS_OPINION : <span className="text-gray-500">None</span>}</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.TaskInfo?.introduce ? <span className="bg-green-500 text-white px-2 md:px-4 py-1 rounded-lg">Done</span> : <span className="bg-red-100 text-white px-2 md:px-4 py-1 rounded-lg">Nop</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.BONUS_OPINION ? studentData.studentInfo?.BONUS_OPINION : <span className="text-gray-500">introduce on camp</span>}</h1>
                     </div>
-
-                    <div className='bg-white text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left text-sm sm:text-md' >Interview Perfomance</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.INTERVIEW_OVERALL_GRADE ? studentData.studentInfo?.INTERVIEW_OVERALL_GRADE : <span className="text-gray-500">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.INTERVIEW_OVERALL_OPINION ? studentData.studentInfo?.INTERVIEW_OVERALL_OPINION : <span className="text-gray-500">None</span>}</h1>
-                    </div>
-
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Overall</h1>
