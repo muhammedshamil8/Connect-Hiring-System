@@ -39,9 +39,124 @@ function index() {
     }))
   }
 
+  const gradeMapping = {
+    'O': 100,
+    'A+': 90,
+    'A': 85,
+    'A-': 80,
+    'B+': 75,
+    'B': 70,
+    'B-': 65,
+    'C+': 60,
+    'C': 55,
+    'C-': 50,
+    'D': 45,
+    'F': 0,
+    '': 0 // Handle empty string or no grade
+  };
+
+
+  const InterviewOverallGrade = (studentInfo) => {
+
+    const grades = [
+      studentInfo?.COMMUNICATION_GRADE,
+      studentInfo?.ATITTUDE_GRADE,
+      studentInfo?.DEDICATION_GRADE,
+      studentInfo?.CONFIDENCE_GRADE,
+      studentInfo?.COMMUNITY_KNOWLEDGE_GRADE,
+    ];
+
+    // Convert letter grades to numerical values
+    const numericGrades = grades.map(grade => gradeMapping[grade] || 0);
+
+    // Filter out null or undefined values (now just zeros for no grades)
+    const validGrades = numericGrades.filter(grade => grade > 0);
+
+    // Handle case where no valid grades
+    if (validGrades.length === 0) return "No Grades Available";
+
+    // Calculate the average
+    const total = validGrades.reduce((acc, grade) => acc + grade, 0);
+    const average = total / validGrades.length;
+
+    // Map the average back to qualitative descriptions
+    let qualitative;
+    if (average >= 90) {
+      qualitative = "Excellent";
+    } else if (average >= 80) {
+      qualitative = "Good";
+    } else if (average >= 70) {
+      qualitative = "Average";
+    } else if (average >= 60) {
+      qualitative = "Below Average";
+    } else {
+      qualitative = "Poor";
+    }
+
+    // Return total percentage out of 100 and qualitative description
+    return {
+      totalPercentage: average.toFixed(2), // Total percentage as a string with 2 decimal places
+      qualitative: qualitative,
+    };
+
+  };
+
+  const calculateOverallGrade = (studentInfo) => {
+    const grades = [
+      studentInfo?.FORM_GRADE,
+      studentInfo?.INTERVIEW_OVERALL_GRADE,
+      studentInfo?.COMMUNICATION_GRADE,
+      studentInfo?.ATITTUDE_GRADE,
+      studentInfo?.CAMP_GRADE_by_volunteer,
+      studentInfo?.TASK_GRADE,
+      studentInfo?.COMMUNITY_KNOWLEDGE_GRADE,
+      studentInfo?.DEDICATION_GRADE,
+      studentInfo?.CONFIDENCE_GRADE,
+      studentInfo?.TASK_GRADE2,
+      studentInfo?.PRESENTATION_GRADE_by_judge,
+      studentInfo?.BONUS_GRADE,
+      studentInfo.TaskInfo?.introduce ? 'A' : '',
+    ];
+
+    // Convert letter grades to numerical values
+    const numericGrades = grades.map(grade => gradeMapping[grade] || 0);
+
+    // Filter out null or undefined values (now just zeros for no grades)
+    const validGrades = numericGrades.filter(grade => grade > 0);
+
+    // Handle case where no valid grades
+    if (validGrades.length === 0) return "No Grades Available";
+
+    // Calculate the average
+    const total = validGrades.reduce((acc, grade) => acc + grade, 0);
+    const average = total / validGrades.length;
+
+    // Map the average back to qualitative descriptions
+    let qualitative;
+    if (average >= 90) {
+      qualitative = "Excellent";
+    } else if (average >= 80) {
+      qualitative = "Good";
+    } else if (average >= 70) {
+      qualitative = "Average";
+    } else if (average >= 60) {
+      qualitative = "Below Average";
+    } else {
+      qualitative = "Poor";
+    }
+
+    // Return total percentage out of 100 and qualitative description
+    return {
+      totalPercentage: average.toFixed(2), // Total percentage as a string with 2 decimal places
+      qualitative: qualitative,
+    };
+  };
+
+
+
   const getStudent = async (search) => {
     if (searchText === "") return;
-    console.log(search, searchMode);
+    // console.log(search, searchMode);
     clearStudentData();
     setInitial(false);
     setLoading(true);
@@ -62,7 +177,7 @@ function index() {
           })
           .firstPage();
       } catch (error) {
-        console.log("Error fetching interns_selection_2025:", error);
+        // console.log("Error fetching interns_selection_2025:", error);
       }
 
       // Fetch data from "Scores"
@@ -75,7 +190,7 @@ function index() {
           })
           .firstPage();
       } catch (error) {
-        console.log("Error fetching Scores:", error);
+        // console.log("Error fetching Scores:", error);
       }
 
       // Fetch data from "Task_Submit"
@@ -98,11 +213,11 @@ function index() {
       }
 
       let combinedData = {};
-      console.log(formSubmittedRecords, studentRecords, taskRecords);
+      // console.log(formSubmittedRecords, studentRecords, taskRecords);
       // Process data from "interns_selection_2025"
       if (formSubmittedRecords.length > 0) {
         const formRecord = formSubmittedRecords[0].fields;
-        console.log("Form_Submitted record:", formRecord);
+        // console.log("Form_Submitted record:", formRecord);
 
         // const formResponses = Object.keys(formRecord)
         //   .filter((key) => !['CHEST_NO', 'Task Submit', 'Task_Submitted'].includes(key))
@@ -128,7 +243,7 @@ function index() {
       // Process data from "Scores"
       if (studentRecords.length > 0) {
         const studentRecord = studentRecords[0].fields;
-        console.log("Students record:", studentRecord);
+        // console.log("Students record:", studentRecord);
 
         combinedData = {
           ...combinedData,
@@ -141,7 +256,7 @@ function index() {
       // Process data from "Task_Submit"
       if (taskRecords.length > 0) {
         const taskRecord = taskRecords[0].fields;
-        console.log("Task record:", taskRecord);
+        // console.log("Task record:", taskRecord);
 
         combinedData = {
           ...combinedData,
@@ -149,9 +264,15 @@ function index() {
         };
       }
 
+      // Calculate the overall grade
+      combinedData.overallGrade = calculateOverallGrade(combinedData.studentInfo);
+      combinedData.interviewOverallGrade = InterviewOverallGrade(combinedData.studentInfo);
+
       // Set the combined student data
+      console.log(combinedData);
       setStudentData(combinedData);
-      console.log("Combined data:", combinedData);
+
+      // console.log("Combined data:", combinedData);
 
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -215,10 +336,10 @@ function index() {
                     <div className='primary-bg  p-3 !text-white text-xl sm:text-2xl font-bold uppercase rounded-2xl'>{studentData.studentInfo?.CHEST_NO}</div>
                     <div className='flex flex-col items-center justify-center'>
                       <h1 className='text-xl sm:text-3xl font-semibold'>{studentData?.name}</h1>
-                      <p className='-mt-0.5 text-sm sm:text-md'>{studentData.department}</p>
+                      <p className='-mt-0.5 text-sm sm:text-md'>{studentData?.department}</p>
                     </div>
                   </div>
-                  <p className='-mt-0.5 text-sm sm:text-md pt-2 pb-1'>Admission no: {studentData.studentInfo.Admission_No}</p>
+                  <p className='-mt-0.5 text-sm sm:text-md pt-2 pb-1'>Admission no: {studentData.studentInfo?.Admission_No}</p>
                 </div>
               </div>
 
@@ -306,14 +427,13 @@ function index() {
                     </div>
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
-                      <h1 className='col-span-2 text-left' >Overall</h1>
-                      <h1 className='col-span-1 text-center'>{studentData.studentInfo?.INTERVIEW_OVERALL_GRADE ? studentData.studentInfo?.INTERVIEW_OVERALL_GRADE : <span className="text-gray-700">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center'>{studentData.studentInfo?.INTERVIEW_OVERALL_OPINION ? studentData.studentInfo?.INTERVIEW_OVERALL_OPINION : <span className="text-gray-700">None</span>}</h1>
+                      <h1 className='col-span-2 text-left' >Interview Overall</h1>
+                      <h1 className='col-span-1 text-center'>{studentData.interviewOverallGrade ? studentData.interviewOverallGrade.totalPercentage + '%' : <span className="text-gray-700">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center'>{studentData.studentInfo?.INTERVIEW_OVERALL_OPINION ? studentData.studentInfo?.INTERVIEW_OVERALL_OPINION : <span className="text-gray-500">{studentData.interviewOverallGrade.qualitative}</span>}</h1>
                     </div>
                   </div>
                 )}
               </div>
-
               <div className='flex flex-col justify-center w-full items-center mt-10' ref={parent}>
                 <div className="flex items-center justify-center w-full gap-2 mb-6">
                   <h1 className='primary-text underline underline-offset-2 text-xl sm:text-3xl font-semibold  select-none'>Scores</h1>
@@ -355,8 +475,8 @@ function index() {
 
                     <div className='bg-[#241E59]/40 text-black font-semibold w-full grid grid-cols-5 p-4 md:px-8 rounded-2xl mt-4 mb-4 border border-gray-400'>
                       <h1 className='col-span-2 text-left text-sm sm:text-md' >Overall</h1>
-                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.studentInfo?.OVERALL_GRADE ? studentData.studentInfo?.OVERALL_GRADE : <span className="text-gray-700">Nill</span>}</h1>
-                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.studentInfo?.OVERALL_OPINION ? studentData.studentInfo?.OVERALL_OPINION : <span className="text-gray-700">None</span>}</h1>
+                      <h1 className='col-span-1 text-center text-sm sm:text-md'>{studentData.overallGrade ? studentData.overallGrade.totalPercentage + '%' : <span className="text-gray-700">Nill</span>}</h1>
+                      <h1 className='col-span-2 text-center text-sm sm:text-md'>{studentData.overallGrade ? studentData.overallGrade.qualitative : <span className="text-gray-700">None</span>}</h1>
                     </div>
 
                   </div>
