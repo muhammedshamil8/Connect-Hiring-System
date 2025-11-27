@@ -22,7 +22,8 @@ function AdminLayout() {
 
   const handleOpen = () => setOpen(!open);
   return (
-    <AuthRoleRequire role="admin">
+    // <AuthRoleRequire role="admin">
+    <>
       <div className='flex items-center justify-end p-2'>
         <nav className='flex items-center gap-4 p-4'>
           {userRole === 'admin' && <>
@@ -74,7 +75,8 @@ function AdminLayout() {
           </Button>
         </DialogFooter>
       </Dialog>
-    </AuthRoleRequire>
+      </>
+    // </AuthRoleRequire>
   );
 }
 

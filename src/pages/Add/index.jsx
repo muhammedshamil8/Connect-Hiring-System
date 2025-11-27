@@ -1,506 +1,920 @@
-import {
-  Button, Input, Card, CardBody, Typography, Textarea, Select, Option, Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Checkbox
-} from "@material-tailwind/react";
+// ScoreFormFixed.jsx
+import React, { useState, useCallback, useMemo } from "react";
 import Airtable from "airtable";
 import backendUrl from "@/const/backendUrl";
-import { useState } from "react";
-import { Search, ChefHat, Loader } from 'lucide-react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useAuth } from '@/context/AuthContext';
+import {
+  Button,
+  Input,
+  Card,
+  CardBody,
+  Typography,
+  Select,
+  Option,
+} from "@material-tailwind/react";
+import CustomMultiSelect from "@/components/MultiSelect";
+import { Search, Save, Loader, ArrowLeft, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const base = new Airtable({ apiKey: `${backendUrl.secretKey}` }).base(
   `${backendUrl.airtableBase}`
 );
 
-const gradePoints = {
-  O: 10,
-  'A+': 9,
-  A: 8,
-  'B+': 7,
-  B: 6,
-  C: 5,
-  D: 4,
-  'N/A': 0
-};
+// List of evaluators/interns
+const EVALUATORS = [
+  "Shamil",
+  "Dayyan",
+  "Afrin",
+  "Fahmiya",
+  "Musfira",
+  "Fadil",
+  "Hilfa",
+  "Ramess",
+  "Mushrifa",
+  "Nourin",
+  "Sinan",
+  "Salman",
+  "Muhsina",
+  "Swalih",
+  "Nasrin",
+  "Haneena",
+  "Rafa",
+  "Nayla",
+  "Rizwan",
+  "Anshif",
+  "Haniya",
+  "Murshida",
+  "Hani",
+  "Other",
+];
 
-const pointToGrade = {
-  10: 'O',
-  9: 'A+',
-  8: 'A',
-  7: 'B+',
-  6: 'B',
-  5: 'C',
-  4: 'D',
-  3: 'E',
-  0: ''
-};
+// ---------------------
+// Child components (moved outside to preserve focus)
+// ---------------------
 
-function App() {
-  const [searchText, setSearchText] = useState("");
-  const [studentID, setStudentID] = useState("");
-  const [studentData, setStudentData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [initial, setInitial] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [admissionNo, setAdmissionNo] = useState("");
-  const [error, setError] = useState("");
-
-  const authContext = useAuth();
-  const { user, role: userRole, handleSignOut } = authContext || {};
-
-  // Score states
-  const [grades, setGrades] = useState({
-    COMMUNICATION_GRADE: '',
-    DEDICATION_GRADE: '',
-    ATITTUDE_GRADE: '',
-    CONFIDENCE_GRADE: '',
-    COMMUNITY_KNOWLEDGE_GRADE: '',
-    CAMP_GRADE_by_volunteer: '',
-    TASK_GRADE: '',
-    TASK_OPINION: '',
-    OVERALL_GRADE: '',
-    OVERALL_OPINION: '',
-    ORIENTATION_ATTENDED: false,
-    SELECTION_CAMP_ATTENDED: false,
-    BONUS_GRADE: '',
-    BONUS_OPINION: '',
-    SELECTION_RESULT: '...',
-  });
-
-  const getStudent = async (search) => {
-    if (searchText === "") return;
-    setAdmissionNo(search);
-    setInitial(false);
-    clearStudentData();
-    setAlert(false);
-    setSubmitted(false);
-    setLoading(true);
-    base("Students")
-      .select({
-        view: "Data",
-        filterByFormula: `({CHEST_NO} = '${search}')`,
-      })
-      .eachPage(
-        (record, fetchNextPage) => {
-          if (record.length === 0) {
-            setAlert(true);
-            setLoading(false);
-            return;
-          }
-          setStudentData(record[0].fields);
-          setGrades({
-            COMMUNICATION_GRADE: record[0].fields.COMMUNICATION_GRADE || '',
-            DEDICATION: record[0].fields.DEDICATION_GRADE || '',
-            SKILL_ACHIEVEMENT: record[0].fields.SKILL_ACHIEVEMENT_GRADE || '',
-            SKILL_ACHIEVEMENT_TEXT: record[0].fields.SKILL_ACHIEVEMENT_TEXT || '',
-            INTERVIEW_OVERALL_OPINION: record[0].fields.INTERVIEW_OVERALL_OPINION || '',
-            INTERVIEW_OVERALL_GRADE: record[0].fields.INTERVIEW_OVERALL_GRADE || '',
-            DEBATE_SCORE: record[0].fields.DEBATE_GRADE || '',
-            DEBATE_OPINION: record[0].fields.DEBATE_OPINION || '',
-            GROUP_SCORE: record[0].fields.GROUP_GRADE || '',
-            GROUP_OPINION: record[0].fields.GROUP_OPINION || '',
-            STAGE_GROUP_GRADE: record[0].fields.STAGE_GROUP_GRADE || '',
-            STAGE_GROUP_OPINION: record[0].fields.STAGE_GROUP_OPINION || '',
-            STAGE_SCORE: record[0].fields.STAGE_GRADE || '',
-            STAGE_OPINION: record[0].fields.STAGE_OPINION || '',
-            OVERALL_GRADE: record[0].fields.OVERALL_GRADE || '',
-            OVERALL_OPINION: record[0].fields.OVERALL_OPINION || '',
-            ORIENTATION_ATTENDED: record[0].fields.ORIENTATION_ATTENDED || false,
-            SELECTION_CAMP_ATTENDED: record[0].fields.SELECTION_CAMP_ATTENDED || false,
-            BONUS_GRADE: record[0].fields.BONUS_GRADE || '',
-            BONUS_OPINION: record[0].fields.BONUS_OPINION || '',
-            FUND_COLLECTED: record[0].fields.FUND_COLLECTED || '',
-            SELECTION_RESULT: record[0].fields.SELECTION_RESULT || '...',
-          });
-          setStudentID(record[0].id);
-          fetchNextPage();
-          setLoading(false);
-        },
-        function done(err) {
-          if (err) {
-            console.error(err);
-            toast.error(err, {
-              position: 'top-center',
-            });
-            setLoading(false);
-            return;
-          }
-        }
-      );
-  };
-
-  const clearStudentData = () => {
-    // setSearchText("");
-    setStudentData({});
-    setGrades({
-      COMMUNICATION: '',
-      DEDICATION: '',
-      SKILL_ACHIEVEMENT: '',
-      SKILL_ACHIEVEMENT_TEXT: '',
-      INTERVIEW_OVERALL_OPINION: '',
-      INTERVIEW_OVERALL_GRADE: '',
-      DEBATE_SCORE: '',
-      DEBATE_OPINION: '',
-      GROUP_SCORE: '',
-      GROUP_OPINION: '',
-      STAGE_GROUP_GRADE: '',
-      STAGE_GROUP_OPINION: '',
-      STAGE_SCORE: '',
-      STAGE_OPINION: '',
-      OVERALL_GRADE: '',
-      OVERALL_OPINION: '',
-      ORIENTATION_ATTENDED: false,
-      SELECTION_CAMP_ATTENDED: false,
-      BONUS_GRADE: '',
-      BONUS_OPINION: '',
-      FUND_COLLECTED: '',
-      SELECTION_RESULT: '',
-    });
-    setSubmitted(true);
-  };
-
-  const submitScores = async () => {
-    base("Students").update(
-      `${studentID}`,
-      {
-        COMMUNICATION_GRADE: grades.COMMUNICATION === 'N/A' ? '' : grades.COMMUNICATION,
-        DEDICATION_GRADE: grades.DEDICATION === 'N/A' ? '' : grades.DEDICATION,
-        SKILL_ACHIEVEMENT_GRADE: grades.SKILL_ACHIEVEMENT === 'N/A' ? '' : grades.SKILL_ACHIEVEMENT,
-        SKILL_ACHIEVEMENTS: grades.SKILL_ACHIEVEMENT_TEXT || '',
-        INTERVIEW_OVERALL_OPINION: grades.INTERVIEW_OVERALL_OPINION || '',
-        INTERVIEW_OVERALL_GRADE: grades.INTERVIEW_OVERALL_GRADE || '',
-        DEBATE_GRADE: grades.DEBATE_SCORE === 'N/A' ? '' : grades.DEBATE_SCORE,
-        DEBATE_OPINION: grades.DEBATE_OPINION || '',
-        GROUP_GRADE: grades.GROUP_SCORE === 'N/A' ? '' : grades.GROUP_SCORE,
-        GROUP_OPINION: grades.GROUP_OPINION || '',
-        STAGE_GROUP_GRADE: grades.STAGE_GROUP_GRADE === 'N/A' ? '' : grades.STAGE_GROUP_GRADE,
-        STAGE_GROUP_OPINION: grades.STAGE_GROUP_OPINION || '',
-        STAGE_GRADE: grades.STAGE_SCORE === 'N/A' ? '' : grades.STAGE_SCORE,
-        STAGE_OPINION: grades.STAGE_OPINION || '',
-        OVERALL_OPINION: grades.OVERALL_OPINION || '',
-        OVERALL_GRADE: grades.OVERALL_GRADE || '',
-        ORIENTATION_ATTENDED: grades.ORIENTATION_ATTENDED || false,
-        SELECTION_CAMP_ATTENDED: grades.SELECTION_CAMP_ATTENDED || false,
-        BONUS_GRADE: grades.BONUS_GRADE === 'N/A' ? '' : grades.BONUS_GRADE,
-        BONUS_OPINION: grades.BONUS_OPINION || '',
-        FUND_COLLECTED: grades.FUND_COLLECTED || '',
-        SELECTION_RESULT: grades.SELECTION_RESULT || '',
-      },
-      function (err) {
-        if (err) {
-          console.error(err);
-          toast.error(err, {
-            position: 'top-center',
-          });
-          return;
-        } else {
-          // handleOpen();
-          toast.success(`Score Added to the Student ${admissionNo}`, {
-            position: 'top-center',
-          });
-          setAdmissionNo("");
-          setInitial(true);
-          clearStudentData();
-        }
-      }
-    );
-  };
-
-  const handleGradeChange = (section, value) => {
-    const updatedGrades = {
-      ...grades,
-      [section]: value
-    };
-
-    // Calculate INTERVIEW_OVERALL_GRADE
-    const communicationGrade = gradePoints[updatedGrades.COMMUNICATION] || 0;
-    const dedicationGrade = gradePoints[updatedGrades.DEDICATION] || 0;
-    const skillAchievementGrade = gradePoints[updatedGrades.SKILL_ACHIEVEMENT] || 0;
-
-    const interviewOverallGrade = (communicationGrade + dedicationGrade + skillAchievementGrade) / 3;
-    updatedGrades.INTERVIEW_OVERALL_GRADE = pointToGrade[Math.round(interviewOverallGrade)] || '...';
-
-    console.log(updatedGrades);
-    // Calculate OVERALL_GRADE
-    const debateScore = gradePoints[updatedGrades.DEBATE_SCORE] || 0;
-    const groupScore = gradePoints[updatedGrades.GROUP_SCORE] || 0;
-    const groupStageScore = gradePoints[updatedGrades.STAGE_GROUP_GRADE] || 0;
-    const stageScore = gradePoints[updatedGrades.STAGE_SCORE] || 0;
-    const bonusScore = gradePoints[updatedGrades.BONUS_GRADE] || 0;
-
-
-    const overallGrade = (debateScore + groupScore + stageScore + groupStageScore + bonusScore) / 5;
-    updatedGrades.OVERALL_GRADE = pointToGrade[Math.round(overallGrade)] || '...';
-
-    setGrades(updatedGrades);
-  };
-
-  const handleOpen = () => setOpen(!open);
+const ScoreInput = React.memo(function ScoreInput({
+  criterion,
+  value,
+  reason,
+  onScoreChange,
+  onReasonChange,
+}) {
+  // local handler wrappers keep stable references
+  const handleSelect = useCallback(
+    (e) => onScoreChange(criterion.key, e.target.value),
+    [onScoreChange, criterion.key]
+  );
+  const handleText = useCallback(
+    (e) => onReasonChange(criterion.key, e.target.value),
+    [onReasonChange, criterion.key]
+  );
 
   return (
-    <>
-      {userRole === 'admin' ? (
-        <div className="flex flex-col items-center px-4 p-2">
-          <h2 className="text-2xl font-semibold primary-text">This page is on work</h2>
-          {/* <div className='flex items-center justify-center w-full mx-auto'>
-            <div className='mx-auto p-[3px] flex items-center justify-center border border-gray-800 rounded-full w-fit overflow-hidden flex-grow max-w-[600px] '>
-              <input type='search' placeholder='Search Chest Number' className='outline-none ring-0 border-none w-full p-2 px-4 '
-                onChange={(e) => setSearchText(e.target.value.toUpperCase())}
-                value={searchText}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    getStudent(searchText);
-                  }
-                }}
-              />
-              <button className='primary-bg hover:bg-[#241E59]/70 transition-all ease-in-out text-white font-bold py-2 px-4 rounded-full flex items-center justify-center gap-2 cursor-pointer' onClick={() => getStudent(searchText)}>
-                <Search size={16} /> Search
-              </button>
-            </div>
+    <Card className="p-4 mb-4">
+      <CardBody className="p-0">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
+            <Typography variant="h6" className="text-gray-800">
+              {criterion.label}
+            </Typography>
+            <Typography variant="small" className="text-gray-600 mt-1">
+              {criterion.description}
+            </Typography>
+            <Typography variant="small" className="text-gray-500 mt-1">
+              Max: {criterion.max} points
+            </Typography>
           </div>
-          {!loading && studentData && Object.keys(studentData).length > 0 && (
-            <Card className="mt-6 w-full">
+          <div className="ml-4">
+            <select
+              value={value ?? ""}
+              onChange={handleSelect}
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[100px]"
+            >
+              <option value="">Select score</option>
+              {Array.from({ length: criterion.max + 1 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
+            </select>
+            <Typography
+              variant="small"
+              className="text-center text-gray-500 mt-1"
+            >
+              {value || 0}/{criterion.max}
+            </Typography>
+          </div>
+        </div>
+
+        <div>
+          <Typography
+            variant="small"
+            className="font-medium text-gray-700 mb-2"
+          >
+            Reason / Comments
+          </Typography>
+          <textarea
+            value={reason || ""}
+            onChange={handleText}
+            placeholder="Add comments or reasoning for this score..."
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none min-h-[80px]"
+            rows="3"
+          />
+        </div>
+      </CardBody>
+    </Card>
+  );
+});
+
+const EvaluatorSection = React.memo(function EvaluatorSection({
+  stageKey,
+  value,
+  onChange,
+}) {
+  // value assumed to be array
+  return (
+    <Card className="p-4 mb-4 bg-gray-50">
+      <CardBody className="p-0">
+        <Typography variant="h6" className="text-gray-800 mb-3">
+          Evaluated by:
+        </Typography>
+        <CustomMultiSelect
+          options={EVALUATORS}
+          value={value || []}
+          onChange={(selected) => onChange(stageKey, selected)}
+          label="Select Evaluators"
+          placeholder="Choose evaluators..."
+        />
+        {value && value.length > 0 && (
+          <Typography variant="small" className="text-gray-600 mt-2">
+            Selected: {value.join(", ")}
+          </Typography>
+        )}
+      </CardBody>
+    </Card>
+  );
+});
+
+const StageSection = React.memo(function StageSection({
+  title,
+  stageKey,
+  schema,
+  stageName,
+  evaluators,
+  scores,
+  reasons,
+  saved,
+  saving,
+  onSave,
+  onScoreChange,
+  onReasonChange,
+  onEvaluatorChange,
+}) {
+  return (
+    <Card className="mb-6">
+      <CardBody>
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+          <Typography variant="h5" className="text-gray-900">
+            {title}
+          </Typography>
+          <div className="flex items-center gap-2">
+            {saved && <CheckCircle className="text-green-500" size={20} />}
+            <Button
+              onClick={() => onSave(stageName)}
+              disabled={saving}
+              className="bg-indigo-600 hover:bg-indigo-700 flex items-center gap-2"
+              size="sm"
+            >
+              {saving ? (
+                <Loader className="animate-spin" size={16} />
+              ) : (
+                <Save size={16} />
+              )}
+              {saving ? "Saving..." : "Save Stage"}
+            </Button>
+          </div>
+        </div>
+
+        <EvaluatorSection
+          stageKey={stageKey}
+          value={evaluators[stageKey] || []}
+          onChange={onEvaluatorChange}
+        />
+
+        <div className="mt-4">
+          {schema.map((criterion) => (
+            <ScoreInput
+              key={criterion.key}
+              criterion={criterion}
+              value={scores[criterion.key]}
+              reason={reasons[criterion.key]}
+              onScoreChange={onScoreChange}
+              onReasonChange={onReasonChange}
+            />
+          ))}
+        </div>
+      </CardBody>
+    </Card>
+  );
+});
+
+// ---------------------
+// Main component
+// ---------------------
+
+export default function ScoreFormFixed() {
+  const navigate = useNavigate();
+  const [searchText, setSearchText] = useState("");
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState({});
+  const [searchMode, setSearchMode] = useState("admission");
+
+  const S1_SCHEMA = useMemo(
+    () => [
+      {
+        key: "S1_Completion_Timeliness",
+        label: "Completion & Timeliness",
+        max: 8,
+        description: "How well did the candidate complete tasks on time?",
+      },
+      {
+        key: "S1_Skill_Technical",
+        label: "Skill & Technical Quality",
+        max: 12,
+        description: "Technical proficiency and skill level demonstrated",
+      },
+      {
+        key: "S1_Originality",
+        label: "Originality & Initiative",
+        max: 6,
+        description: "Creativity and proactive approach to tasks",
+      },
+      {
+        key: "S1_Relevance",
+        label: "Relevance to Role & Brief",
+        max: 4,
+        description:
+          "How relevant were the submissions to the given role/brief?",
+      },
+    ],
+    []
+  );
+
+  const S2_SCHEMA = useMemo(
+    () => [
+      {
+        key: "S2_Interest",
+        label: "Interest & Initiative",
+        max: 7,
+        description: "Level of interest shown and initiative taken",
+      },
+      {
+        key: "S2_TaskUnderstanding",
+        label: "Understanding of the Task",
+        max: 7,
+        description: "Comprehension of task requirements and objectives",
+      },
+      {
+        key: "S2_Communication",
+        label: "Communication Skills",
+        max: 7,
+        description: "Verbal and written communication abilities",
+      },
+      {
+        key: "S2_TeamSpirit",
+        label: "Team Spirit & Attitude",
+        max: 7,
+        description: "Collaborative attitude and team-oriented behavior",
+      },
+      {
+        key: "S2_LearningMindset",
+        label: "Learning Mindset",
+        max: 7,
+        description: "Willingness to learn and adapt to new challenges",
+      },
+    ],
+    []
+  );
+
+  const S3_SCHEMA = useMemo(
+    () => [
+      {
+        key: "S3_Teamwork",
+        label: "Teamwork & Collaboration",
+        max: 12,
+        description: "Ability to work effectively in team settings",
+      },
+      {
+        key: "S3_Leadership",
+        label: "Leadership & Initiative",
+        max: 10,
+        description: "Leadership qualities and taking initiative",
+      },
+      {
+        key: "S3_ProblemSolving",
+        label: "Problem Solving & Creativity",
+        max: 8,
+        description: "Approach to problem-solving and creative thinking",
+      },
+      {
+        key: "S3_Reliability",
+        label: "Reliability & Responsibility",
+        max: 5,
+        description: "Dependability and sense of responsibility",
+      },
+    ],
+    []
+  );
+
+  const [scores, setScores] = useState({});
+  const [reasons, setReasons] = useState({});
+  const [bonus, setBonus] = useState(0);
+  const [bonusReason, setBonusReason] = useState("");
+  const [evaluators, setEvaluators] = useState({
+    S1_Evaluators: [],
+    S2_Evaluators: [],
+    S3_Evaluators: [],
+  });
+  const [savedStages, setSavedStages] = useState({
+    stage1: false,
+    stage2: false,
+    stage3: false,
+    bonus: false,
+  });
+
+  const getStudent = useCallback(
+    async (search) => {
+      if (!search) return;
+      setLoading(true);
+      setStudentData(null);
+      setScores({});
+      setReasons({});
+      setBonus(0);
+      setBonusReason("");
+      setEvaluators({
+        S1_Evaluators: [],
+        S2_Evaluators: [],
+        S3_Evaluators: [],
+      });
+      setSavedStages({
+        stage1: false,
+        stage2: false,
+        stage3: false,
+        bonus: false,
+      });
+
+      try {
+        const filterFormula =
+          searchMode === "chest"
+            ? `{CHEST_NO} = '${search.toUpperCase()}'`
+            : `{Admission_No} = '${search}'`;
+
+        const formRecords = await base("interns_selection_2025")
+          .select({
+            view: "Applicants",
+            filterByFormula: filterFormula,
+            maxRecords: 1,
+          })
+          .firstPage();
+
+        const scoresRecords = await base("Scores")
+          .select({
+            view: "Data",
+            filterByFormula: filterFormula,
+            maxRecords: 1,
+          })
+          .firstPage();
+
+        const formRec = formRecords[0]?.fields ?? null;
+        const scoresRec = scoresRecords[0]?.fields ?? null;
+
+        if (!formRec) {
+          toast.error("No student found with the provided search criteria");
+          setLoading(false);
+          return;
+        }
+
+        const student = {
+          admissionNo: formRec.Admission_No,
+          name: formRec.Name,
+          department: formRec.department,
+          chestNo: scoresRec.CHEST_NO || formRec.CHEST_NO,
+          recordId: scoresRecords[0]?.id,
+        };
+
+        setStudentData(student);
+
+        if (scoresRec) {
+          const existingScores = {};
+          const existingReasons = {};
+          const existingEvaluators = {
+            S1_Evaluators: [],
+            S2_Evaluators: [],
+            S3_Evaluators: [],
+          };
+
+          [...S1_SCHEMA, ...S2_SCHEMA, ...S3_SCHEMA].forEach((criterion) => {
+            if (scoresRec[criterion.key] !== undefined) {
+              existingScores[criterion.key] = scoresRec[criterion.key];
+            }
+            if (scoresRec[`${criterion.key}_Reason`] !== undefined) {
+              existingReasons[criterion.key] =
+                scoresRec[`${criterion.key}_Reason`];
+            }
+          });
+
+          // Pre-fill evaluators as arrays
+          if (scoresRec.S1_Evaluators) {
+            existingEvaluators.S1_Evaluators = Array.isArray(
+              scoresRec.S1_Evaluators
+            )
+              ? scoresRec.S1_Evaluators
+              : typeof scoresRec.S1_Evaluators === "string"
+              ? scoresRec.S1_Evaluators.split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [scoresRec.S1_Evaluators];
+          }
+          if (scoresRec.S2_Evaluators) {
+            existingEvaluators.S2_Evaluators = Array.isArray(
+              scoresRec.S2_Evaluators
+            )
+              ? scoresRec.S2_Evaluators
+              : typeof scoresRec.S2_Evaluators === "string"
+              ? scoresRec.S2_Evaluators.split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [scoresRec.S2_Evaluators];
+          }
+          if (scoresRec.S3_Evaluators) {
+            existingEvaluators.S3_Evaluators = Array.isArray(
+              scoresRec.S3_Evaluators
+            )
+              ? scoresRec.S3_Evaluators
+              : typeof scoresRec.S3_Evaluators === "string"
+              ? scoresRec.S3_Evaluators.split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [scoresRec.S3_Evaluators];
+          }
+
+          if (scoresRec.Bonus_Participation !== undefined) {
+            setBonus(scoresRec.Bonus_Participation);
+          }
+          if (scoresRec.Bonus_Participation_Reason !== undefined) {
+            setBonusReason(scoresRec.Bonus_Participation_Reason);
+          }
+
+          setScores(existingScores);
+          setReasons(existingReasons);
+          setEvaluators(existingEvaluators);
+
+          setSavedStages({
+            stage1: existingEvaluators.S1_Evaluators.length > 0,
+            stage2: existingEvaluators.S2_Evaluators.length > 0,
+            stage3: existingEvaluators.S3_Evaluators.length > 0,
+            bonus: scoresRec.Bonus_Participation !== undefined,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching student:", error);
+        toast.error("Error fetching student data");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [searchMode, S1_SCHEMA, S2_SCHEMA, S3_SCHEMA]
+  );
+
+  const handleScoreChange = useCallback((criterionKey, value) => {
+    const numValue = value !== "" ? parseInt(value, 10) : "";
+    setScores((prev) => ({ ...prev, [criterionKey]: numValue }));
+  }, []);
+
+  const handleReasonChange = useCallback((criterionKey, value) => {
+    setReasons((prev) => ({ ...prev, [criterionKey]: value }));
+  }, []);
+
+  const handleBonusChange = useCallback((value) => {
+    setBonus(value !== "" ? parseInt(value, 10) : "");
+  }, []);
+
+  const handleBonusReasonChange = useCallback((value) => {
+    setBonusReason(value);
+  }, []);
+
+  const handleEvaluatorChange = useCallback((stageKey, selectedEvaluators) => {
+    setEvaluators((prev) => ({ ...prev, [stageKey]: selectedEvaluators }));
+  }, []);
+
+  const calculateTotal = useCallback(
+    (schema) =>
+      schema.reduce(
+        (total, criterion) => total + (scores[criterion.key] || 0),
+        0
+      ),
+    [scores]
+  );
+
+  const calculateGrandTotal = useCallback(() => {
+    const s1Total = calculateTotal(S1_SCHEMA);
+    const s2Total = calculateTotal(S2_SCHEMA);
+    const s3Total = calculateTotal(S3_SCHEMA);
+    return s1Total + s2Total + s3Total + (bonus || 0);
+  }, [calculateTotal, S1_SCHEMA, S2_SCHEMA, S3_SCHEMA, bonus]);
+
+  const saveStage = useCallback(
+    async (stage) => {
+      if (!studentData) return;
+      setSaving((prev) => ({ ...prev, [stage]: true }));
+
+      try {
+        const fields = {
+          // Name: studentData.name,
+          // Admission_No: studentData.admissionNo,
+          // CHEST_NO: studentData.chestNo,
+          // department: studentData.department,
+        };
+
+        if (stage === "stage1") {
+          S1_SCHEMA.forEach((criterion) => {
+            if (scores[criterion.key] !== undefined)
+              fields[criterion.key] = scores[criterion.key];
+            if (reasons[criterion.key] !== undefined)
+              fields[`${criterion.key}_Reason`] = reasons[criterion.key];
+          });
+          fields.S1_Evaluators = evaluators.S1_Evaluators;
+        } else if (stage === "stage2") {
+          S2_SCHEMA.forEach((criterion) => {
+            if (scores[criterion.key] !== undefined)
+              fields[criterion.key] = scores[criterion.key];
+            if (reasons[criterion.key] !== undefined)
+              fields[`${criterion.key}_Reason`] = reasons[criterion.key];
+          });
+          fields.S2_Evaluators = evaluators.S2_Evaluators;
+        } else if (stage === "stage3") {
+          S3_SCHEMA.forEach((criterion) => {
+            if (scores[criterion.key] !== undefined)
+              fields[criterion.key] = scores[criterion.key];
+            if (reasons[criterion.key] !== undefined)
+              fields[`${criterion.key}_Reason`] = reasons[criterion.key];
+          });
+          fields.S3_Evaluators = evaluators.S3_Evaluators;
+        } else if (stage === "bonus") {
+          fields.Bonus_Participation = bonus || 0;
+          fields.Bonus_Participation_Reason = bonusReason || "";
+        }
+
+        console.log("Saving fields:", fields);
+
+        if (studentData.recordId) {
+          await base("Scores").update(studentData.recordId, fields);
+        } else {
+          const record = await base("Scores").create([{ fields }]);
+          setStudentData((prev) => ({ ...prev, recordId: record[0].id }));
+        }
+
+        setSavedStages((prev) => ({ ...prev, [stage]: true }));
+        toast.success(`${getStageName(stage)} saved successfully!`);
+      } catch (error) {
+        console.error(`Error saving ${stage}:`, error);
+        // Airtable errors may have .response or message
+        toast.error(
+          `Error saving ${getStageName(stage)}: ${
+            error?.message || "Unknown error"
+          }`
+        );
+      } finally {
+        setSaving((prev) => ({ ...prev, [stage]: false }));
+      }
+    },
+    [
+      studentData,
+      scores,
+      reasons,
+      evaluators,
+      bonus,
+      bonusReason,
+      S1_SCHEMA,
+      S2_SCHEMA,
+      S3_SCHEMA,
+    ]
+  );
+
+  function getStageName(stage) {
+    const names = {
+      stage1: "Stage 1 - Task Evaluation",
+      stage2: "Stage 2 - Interview Assessment",
+      stage3: "Stage 3 - Camp Performance",
+      bonus: "Bonus Points",
+    };
+    return names[stage] || stage;
+  }
+
+  return (
+    <div className="w-full p-4">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="max-w-6xl mx-auto">
+        {/* Search Section */}
+        <Card className="mb-6">
+          <CardBody>
+            <div className="text-xl font-bold mb-4 text-center">
+              Update Candidate Scores
+            </div>
+            <div className="flex justify-between p-2 flex-wrap-reverse gap-4 mb-4">
+              <div className="flex items-center justify-center gap-4 my-4 bg-gray-200 w-fit rounded-full p-1">
+                <Button
+                  variant={searchMode === "chest" ? "filled" : "text"}
+                  onClick={() => setSearchMode("chest")}
+                  className={`rounded-full ${
+                    searchMode === "chest"
+                      ? "bg-indigo-700"
+                      : "bg-transparent text-gray-700"
+                  }`}
+                >
+                  Chest No
+                </Button>
+                <Button
+                  variant={searchMode === "admission" ? "filled" : "text"}
+                  onClick={() => setSearchMode("admission")}
+                  className={`rounded-full ${
+                    searchMode === "admission"
+                      ? "bg-indigo-700"
+                      : "bg-transparent text-gray-700"
+                  }`}
+                >
+                  Admission No
+                </Button>
+              </div>
+
+              <Button
+                onClick={() => navigate("/admin/list")}
+                className="mb-4 bg-gray-300 hover:bg-gray-400 text-gray-800 flex items-center gap-2 p-4 rounded-lg h-fit"
+              >
+                <ArrowLeft size={16} /> Back to List
+              </Button>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <Input
+                  label={`Search by ${
+                    searchMode === "chest" ? "Chest No" : "Admission No"
+                  }`}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") getStudent(searchText.trim());
+                  }}
+                  className="w-full"
+                />
+              </div>
+              <Button
+                onClick={() => getStudent(searchText.trim())}
+                disabled={loading}
+                className="bg-indigo-700 hover:bg-indigo-800 flex items-center gap-2"
+              >
+                <Search size={18} />
+                {loading ? "Searching..." : "Search"}
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader className="animate-spin text-indigo-700 mr-2" />
+            <Typography>Loading candidate data...</Typography>
+          </div>
+        )}
+
+        {studentData && (
+          <div className="space-y-6">
+            {/* Student Info */}
+            <Card>
               <CardBody>
-
-                <div className='flex w-full items-center justify-center gap-4 secondary-bg p-4 mb-4 rounded-md'>
-                  <div className='primary-bg  p-3 !text-white text-xl sm:text-3xl font-bold uppercase rounded-2xl'>{studentData.CHEST_NO}</div>
-                  <div className='flex flex-col items-center justify-center'>
-                    <h1 className='text-xl sm:text-3xl font-semibold text-black'>{studentData.NAME}</h1>
-                    <p className='-mt-0.5 text-sm sm:text-md text-black'>{studentData.DEPARTMENT}</p>
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="bg-indigo-700 text-white font-bold p-3 rounded-xl text-lg">
+                    {studentData.chestNo}
                   </div>
-                </div>
-
-
-                <Typography variant="h5" className="mb-3" color="blue-gray">
-                  Interview
-                </Typography>
-                <div className="flex gap-2 flex-col mb-4 space-y-3">
-                  <Select
-                    label="Communication Skill"
-                    value={grades.COMMUNICATION}
-                    onChange={(value) => handleGradeChange("COMMUNICATION", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Select
-                    label="Dedication"
-                    value={grades.DEDICATION}
-                    onChange={(value) => handleGradeChange("DEDICATION", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Select
-                    label="Skill & Achievement"
-                    value={grades.SKILL_ACHIEVEMENT_TEXT}
-                    onChange={(value) => handleGradeChange("SKILL_ACHIEVEMENT", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Skill Achievements"
-                    value={grades.SKILL_ACHIEVEMENT_TEXT}
-                    onChange={(e) => setGrades({ ...grades, SKILL_ACHIEVEMENT_TEXT: e.target.value })}
-                  />
-                  <div className="flex items-center w-full">
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-bold mb-1">Overall Interview Opinion:</span>
-                      <Textarea
-                        label="Opinion"
-                        value={grades.INTERVIEW_OVERALL_OPINION}
-                        onChange={(e) => setGrades({ ...grades, INTERVIEW_OVERALL_OPINION: e.target.value })}
-                      />
-                    </div>
+                  <div>
+                    <Typography variant="h4">{studentData.name}</Typography>
+                    <Typography variant="lead" className="text-gray-600">
+                      {studentData.department}
+                    </Typography>
+                    <Typography variant="small" className="text-gray-500">
+                      Admission No: {studentData.admissionNo}
+                    </Typography>
                   </div>
-
-                  <div className="!text-gray-800 md:px-6 flex items-center justify-between border border-gray-400 bg-[#241E59]/40 p-2 rounded-lg">
-                    <Typography variant="h6">Interview Overall Grade: {grades.INTERVIEW_OVERALL_GRADE}</Typography>
-                  </div>
-                </div>
-                <Typography variant="h5" className="mb-3" color="blue-gray">
-                  Selection
-                </Typography>
-                <div className="flex gap-4 flex-col">
-                  <Select
-                    label="Debate Score"
-                    value={grades.DEBATE_SCORE}
-                    onChange={(value) => handleGradeChange("DEBATE_SCORE", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Debate Opinion"
-                    value={grades.DEBATE_OPINION}
-                    onChange={(e) => setGrades({ ...grades, DEBATE_OPINION: e.target.value })}
-                  />
-                  <Select
-                    label="Group Activity Score"
-                    value={grades.GROUP_SCORE}
-                    onChange={(value) => handleGradeChange("GROUP_SCORE", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Group Opinion"
-                    value={grades.GROUP_OPINION}
-                    onChange={(e) => setGrades({ ...grades, GROUP_OPINION: e.target.value })}
-                  />
-                  <Select
-                    label="Stage Group Activity Score"
-                    value={grades.STAGE_GROUP_GRADE}
-                    onChange={(value) => handleGradeChange("STAGE_GROUP_GRADE", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Stage Group Opinion"
-                    value={grades.STAGE_GROUP_OPINION}
-                    onChange={(e) => setGrades({ ...grades, STAGE_GROUP_OPINION: e.target.value })}
-                  />
-                  <Select
-                    label="Stage Performance Score"
-                    value={grades.STAGE_SCORE}
-                    onChange={(value) => handleGradeChange("STAGE_SCORE", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Stage Opinion"
-                    value={grades.STAGE_OPINION}
-                    onChange={(e) => setGrades({ ...grades, BONUS_GRADE: e.target.value })}
-                  />
-                  <Select
-                    label="Bonus Score"
-                    value={grades.BONUS_GRADE}
-                    onChange={(value) => handleGradeChange("BONUS_GRADE", value)}
-                  >
-                    {Object.keys(gradePoints).map((grade) => (
-                      <Option key={grade} value={grade}>{grade}</Option>
-                    ))}
-                  </Select>
-                  <Textarea
-                    label="Bonus Opinion"
-                    value={grades.BONUS_OPINION}
-                    onChange={(e) => setGrades({ ...grades, BONUS_OPINION: e.target.value })}
-                  />
-                  <div className="flex items-center w-full">
-                    <div className="flex flex-col w-full">
-                      <span className="text-sm font-bold mb-1">Overall  Opinion:</span>
-                      <Textarea
-                        label="Opinion"
-                        value={grades.OVERALL_OPINION}
-                        onChange={(e) => setGrades({ ...grades, OVERALL_OPINION: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="!text-gray-800 md:px-6 flex items-center justify-between border border-gray-400 bg-[#241E59]/40 p-2 rounded-lg">
-                    <Typography variant="h6"> Overall Grade: {grades.OVERALL_GRADE}</Typography>
-                  </div>
-
-                  <Typography variant="h5" className="mt-3" color="blue-gray">
-                    Attendance
-                  </Typography>
-                  <div className="flex items-center gap-4 flex-col md:flex-row w-full">
-                    <div className="flex justify-start items-start gap-2 w-full">
-                      <Checkbox
-                        id="orientation"
-                        name="orientation"
-                        checked={grades.ORIENTATION_ATTENDED}
-                        onChange={(e) => setGrades({ ...grades, ORIENTATION_ATTENDED: e.target.checked })}
-                        label="Orientation Attended"
-                      />
-                    </div>
-                    <div className="flex items-start justify-start gap-2 w-full">
-                      <Checkbox
-                        id="selection"
-                        name="selection"
-                        checked={grades.SELECTION_CAMP_ATTENDED}
-                        onChange={(e) => setGrades({ ...grades, SELECTION_CAMP_ATTENDED: e.target.checked })}
-                        label="Selection Camp Attended"
-                      />
-                    </div>
-                  </div>
-
-                  <Typography variant="h5" className="mb-3" color="blue-gray">
-                    Main Points
-                  </Typography>
-                  <Input
-                    type="number"
-                    label="Fund Collected"
-                    value={grades.FUND_COLLECTED}
-                    onChange={(e) => setGrades({ ...grades, FUND_COLLECTED: e.target.value })}
-                  />
-                  <Select
-                    label="Selection Result"
-                    required
-                    value={grades.SELECTION_RESULT}
-                    onChange={(value) => setGrades({ ...grades, SELECTION_RESULT: value })}
-                  >
-                    <Option value="...">...</Option>
-                    <Option value="Pending">Pending</Option>
-                    <Option value="Yes">Yes</Option>
-                    <Option value="No">No</Option>
-
-                  </Select>
-                  <Button
-                    className="w-full bg-green-500 mt-2"
-                    onClick={submitScores}
-                  >
-                    Submit
-                  </Button>
                 </div>
               </CardBody>
             </Card>
-          )
-          }
 
-          {loading && (
-            <div className='flex items-center justify-center w-full mt-8'>
-              <h1 className='text-2xl font-semibold primary-text flex gap-2 '>Loading...<Loader className="animate-spin" /></h1>
+            {/* Totals */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-blue-50 border-blue-200">
+                <CardBody className="text-center">
+                  <Typography
+                    variant="small"
+                    className="text-blue-600 uppercase font-semibold"
+                  >
+                    Stage 1 - Task
+                  </Typography>
+                  <Typography variant="h3" className="text-blue-700">
+                    {calculateTotal(S1_SCHEMA)}/30
+                  </Typography>
+                  {savedStages.stage1 && (
+                    <CheckCircle
+                      className="text-green-500 mt-2 mx-auto"
+                      size={20}
+                    />
+                  )}
+                </CardBody>
+              </Card>
+
+              <Card className="bg-green-50 border-green-200">
+                <CardBody className="text-center">
+                  <Typography
+                    variant="small"
+                    className="text-green-600 uppercase font-semibold"
+                  >
+                    Stage 2 - Interview
+                  </Typography>
+                  <Typography variant="h3" className="text-green-700">
+                    {calculateTotal(S2_SCHEMA)}/35
+                  </Typography>
+                  {savedStages.stage2 && (
+                    <CheckCircle
+                      className="text-green-500 mt-2 mx-auto"
+                      size={20}
+                    />
+                  )}
+                </CardBody>
+              </Card>
+
+              <Card className="bg-purple-50 border-purple-200">
+                <CardBody className="text-center">
+                  <Typography
+                    variant="small"
+                    className="text-purple-600 uppercase font-semibold"
+                  >
+                    Stage 3 - Camp
+                  </Typography>
+                  <Typography variant="h3" className="text-purple-700">
+                    {calculateTotal(S3_SCHEMA)}/35
+                  </Typography>
+                  {savedStages.stage3 && (
+                    <CheckCircle
+                      className="text-green-500 mt-2 mx-auto"
+                      size={20}
+                    />
+                  )}
+                </CardBody>
+              </Card>
+
+              <Card className="bg-orange-50 border-orange-200">
+                <CardBody className="text-center">
+                  <Typography
+                    variant="small"
+                    className="text-orange-600 uppercase font-semibold"
+                  >
+                    Bonus Points
+                  </Typography>
+                  <Typography variant="h3" className="text-orange-700">
+                    {bonus || 0}/5
+                  </Typography>
+                  <Typography variant="small" className="text-orange-400 mt-2">
+                    Total:{" "}
+                    <span className="font-semibold">
+                      {calculateGrandTotal()}/105
+                    </span>
+                  </Typography>
+                  {savedStages.bonus && (
+                    <CheckCircle
+                      className="text-green-500 mt-2 mx-auto"
+                      size={20}
+                    />
+                  )}
+                </CardBody>
+              </Card>
             </div>
-          )}
 
-          {!loading && initial && (
-            <div className="flex items-center justify-center w-full mt-14">
-              <div className="text-center">
-                <h1 className="text-2xl font-semibold primary-text mb-2 mx-auto flex items-center justify-center"><ChefHat size={40} /></h1>
-                <p className="text-lg text-gray-600">Everything is set! You can start your search.</p>
-              </div>
-            </div>
-          )}
+            {/* Stage Sections */}
+            <StageSection
+              title="Stage 1 — Task Evaluation (30 points)"
+              stageKey="S1_Evaluators"
+              schema={S1_SCHEMA}
+              stageName="stage1"
+              evaluators={evaluators}
+              scores={scores}
+              reasons={reasons}
+              saved={savedStages.stage1}
+              saving={saving.stage1}
+              onSave={saveStage}
+              onScoreChange={handleScoreChange}
+              onReasonChange={handleReasonChange}
+              onEvaluatorChange={handleEvaluatorChange}
+            />
 
-          {alert && <div className="text-red-500 mt-4">No student found!</div>} */}
-          <ToastContainer />
-        </div >
-      ) : (
-        <div className="flex items-center justify-center w-full h-full mt-8">
-          <h2 className="text-2xl font-semibold primary-text">You are not authorized to view this page</h2>
-        </div>
-      )}
-    </>
+            <StageSection
+              title="Stage 2 — Interview Assessment (35 points)"
+              stageKey="S2_Evaluators"
+              schema={S2_SCHEMA}
+              stageName="stage2"
+              evaluators={evaluators}
+              scores={scores}
+              reasons={reasons}
+              saved={savedStages.stage2}
+              saving={saving.stage2}
+              onSave={saveStage}
+              onScoreChange={handleScoreChange}
+              onReasonChange={handleReasonChange}
+              onEvaluatorChange={handleEvaluatorChange}
+            />
 
+            <StageSection
+              title="Stage 3 — Camp Performance (35 points)"
+              stageKey="S3_Evaluators"
+              schema={S3_SCHEMA}
+              stageName="stage3"
+              evaluators={evaluators}
+              scores={scores}
+              reasons={reasons}
+              saved={savedStages.stage3}
+              saving={saving.stage3}
+              onSave={saveStage}
+              onScoreChange={handleScoreChange}
+              onReasonChange={handleReasonChange}
+              onEvaluatorChange={handleEvaluatorChange}
+            />
+
+            {/* Bonus Points */}
+            <Card>
+              <CardBody>
+                <div className="flex justify-between items-center mb-4">
+                  <Typography variant="h5">Bonus Points</Typography>
+                  <div className="flex items-center gap-2">
+                    {savedStages.bonus && (
+                      <CheckCircle className="text-green-500" size={20} />
+                    )}
+                    <Button
+                      onClick={() => saveStage("bonus")}
+                      disabled={saving.bonus}
+                      className="bg-indigo-600 hover:bg-indigo-700 flex items-center gap-2"
+                      size="sm"
+                    >
+                      {saving.bonus ? (
+                        <Loader className="animate-spin" size={16} />
+                      ) : (
+                        <Save size={16} />
+                      )}
+                      {saving.bonus ? "Saving..." : "Save Bonus"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="max-w-xs">
+                  <Select
+                    value={bonus?.toString() || ""}
+                    onChange={(v) => handleBonusChange(v)}
+                    label="Bonus Participation (0-5 points)"
+                  >
+                    <Option value="">Select bonus</Option>
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <Option key={i} value={i.toString()}>
+                        {i}
+                      </Option>
+                    ))}
+                  </Select>
+
+                  <div className="mt-3">
+                    <Typography
+                      variant="small"
+                      className="font-medium text-gray-700 mb-2"
+                    >
+                      Bonus Reason
+                    </Typography>
+                    <textarea
+                      value={bonusReason}
+                      onChange={(e) => handleBonusReasonChange(e.target.value)}
+                      placeholder="Reason for bonus..."
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none min-h-[80px]"
+                    />
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        )}
+
+        {/* if not searched and starting */}
+        {!loading && !studentData && (
+          <div className="text-center text-gray-500 mt-12">
+            Please search for a candidate using their Chest No or Admission No.
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
-
-export default App;
