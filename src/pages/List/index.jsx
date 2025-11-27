@@ -262,14 +262,14 @@ export default function SelectionViewer() {
           ))}
 
             {/* Add Scores Btn */}
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <button
                 onClick={() => navigate("/admin/add")}
                 className="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
               >
                 <Plus size={16} /> Add Scores
               </button>
-            </div>
+            </div> */}
         </div>
 
         {/* Search Bar */}

@@ -15,18 +15,18 @@ import { useState } from 'react';
 
 function AdminLayout() {
   const authContext = useAuth();
-  const { user, role: userRole, handleSignOut } = authContext || {};
+  const { user,  handleSignOut } = authContext || {};
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(!open);
   return (
-    <AuthRoleRequire role="admin">
+    <AuthRoleRequire>
     <>
       <div className='flex items-center justify-end p-2'>
         <nav className='flex items-center gap-4 p-4'>
-          {userRole === 'admin' && <>
+          {user  && <>
             <Link to='/admin/add' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/add' ? 'text-blue-500' : 'text-gray-500'}`}>Add Score</Link>
             <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link></>}
 

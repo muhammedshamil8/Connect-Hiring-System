@@ -1,35 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { Loader } from 'lucide-react';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { Loader } from "lucide-react";
 
 const AuthRoleRequire = ({ children }) => {
-    const authContext = useAuth();
-    const { user, role: userRole, handleSignOut } = authContext || {};
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const { user, loading } = useAuth(); // -> FIX: include loading from context
 
-    useEffect(() => {
-        if (user !== null) {
-            if (!userRole) {
-                handleSignOut();
-                navigate('/login');
-            }
-            setLoading(false);
-        } else {
-            navigate('/login');
-        }
-    }, [user, userRole, navigate, handleSignOut]);
+  // Still loading Firebase auth state
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-white dark:bg-slate-900 flex flex-col items-center justify-center z-50">
+        <Loader className="animate-spin text-indigo-600 dark:text-white mb-3" size={32} />
+        <p className="font-semibold dark:text-white">Authenticating...</p>
+      </div>
+    );
+  }
 
-    if (loading) {
-        return (
-            <div className='fixed top-0 left-0 w-full h-full bg-white dark:bg-slate-900 flex items-center justify-center z-50'>
-                <p className='text-center dark:text-white flex items-center justify-center font-semibold'>Loading...  <Loader className="animate-spin" /></p>
-            </div>
-        );
-    }
+  // Not logged in → redirect
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    return userRole ? children : <Navigate to="/login" replace />;
+  // Logged in → allow page
+  return children;
 };
 
 export default AuthRoleRequire;

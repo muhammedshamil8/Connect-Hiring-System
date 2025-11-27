@@ -619,7 +619,7 @@ export default function ScoreFormFixed() {
       <div className="max-w-6xl mx-auto">
         {/* Search Section */}
         <Card className="mb-6">
-          <CardBody>
+          <CardBody className="!pt-0">
             <div className="text-xl font-bold mb-4 text-center">
               Update Candidate Scores
             </div>
@@ -649,14 +649,14 @@ export default function ScoreFormFixed() {
                 </Button>
               </div>
 
-              <Button
+              {/* <Button
                 onClick={() => navigate("/admin/list")}
                 className="mb-4 bg-gray-300 hover:bg-gray-400 text-gray-800 flex items-center gap-2 p-4 rounded-lg h-fit"
               >
                 <ArrowLeft size={16} /> Back to List
-              </Button>
+              </Button> */}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap ">
               <div className="flex-1">
                 <Input
                   label={`Search by ${
@@ -673,7 +673,7 @@ export default function ScoreFormFixed() {
               <Button
                 onClick={() => getStudent(searchText.trim())}
                 disabled={loading}
-                className="bg-indigo-700 hover:bg-indigo-800 flex items-center gap-2"
+                className="bg-indigo-700 hover:bg-indigo-800 flex items-center gap-2 w-fit"
               >
                 <Search size={18} />
                 {loading ? "Searching..." : "Search"}

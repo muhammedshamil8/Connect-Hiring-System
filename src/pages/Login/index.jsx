@@ -19,6 +19,7 @@ const Login = () => {
     const [parent, enableAnimations] = useAutoAnimate(/* optional config */)
 
     useEffect(() => {
+        console.log('Current user:', user);
         if (user) {
             navigate('/admin/list');
         }

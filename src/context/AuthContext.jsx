@@ -1,29 +1,28 @@
 // src/context/AuthContext.js
-import  { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '@/config/firebase'; 
-import { Loader } from 'lucide-react';
+import { createContext, useContext, useState, useEffect } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "@/config/firebase";
+import { Loader } from "lucide-react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
+  // const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        try {
-          const idTokenResult = await user.getIdTokenResult();
-          setRole(idTokenResult.claims.role || ''); 
-        } catch (error) {
-          console.error("Error getting user role:", error);
-        }
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        setUser(fbUser);
+
+        // Optional: Fetch role from custom claims
+        // const idTokenResult = await fbUser.getIdTokenResult();
+        // setRole(idTokenResult.claims.role || "");
+
       } else {
         setUser(null);
-        setRole(null);
+        // setRole(null);
       }
       setLoading(false);
     });
@@ -35,16 +34,19 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
   };
 
+  /* ----------------- Loading Screen ----------------- */
   if (loading) {
     return (
-      <div className='fixed top-0 left-0 w-full h-full bg-white dark:bg-slate-900 flex items-center justify-center z-50'>
-        <p className='text-center dark:text-white flex items-center justify-center font-semibold'>Loading...  <Loader className="animate-spin" /></p>
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-slate-900 z-50">
+        <Loader size={32} className="animate-spin text-indigo-600 dark:text-white mb-3" />
+        <p className="font-semibold text-gray-700 dark:text-gray-200">Authenticating...</p>
       </div>
     );
   }
 
+  /* ----------------- Provider ----------------- */
   return (
-    <AuthContext.Provider value={{ user, role, handleSignOut }}>
+    <AuthContext.Provider value={{ user, handleSignOut }}>
       {children}
     </AuthContext.Provider>
   );
