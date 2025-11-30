@@ -1,39 +1,37 @@
-// components/CustomMultiSelect.jsx
-import React, { useState, useEffect } from "react";
-import { 
-  Menu, 
-  MenuHandler, 
-  MenuList, 
-  MenuItem, 
-  Checkbox, 
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Popover,
+  PopoverHandler,
+  PopoverContent,
   Button,
+  Checkbox,
   Typography,
-  Input
+  Input,
 } from "@material-tailwind/react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, X } from "lucide-react";
 
-export default function CustomMultiSelect({ 
-  options, 
-  value = [], 
-  onChange, 
+export default function CustomMultiSelect({
+  options,
+  value = [],
+  onChange,
   label = "Select options",
-  placeholder = "Select options"
+  placeholder = "Select options",
 }) {
   const [selectedValues, setSelectedValues] = useState(value);
-  const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setSelectedValues(value);
   }, [value]);
 
-  const handleCheckboxChange = (optionValue) => {
-    const newSelectedValues = selectedValues.includes(optionValue)
-      ? selectedValues.filter(item => item !== optionValue)
-      : [...selectedValues, optionValue];
-    
-    setSelectedValues(newSelectedValues);
-    onChange(newSelectedValues);
+  const handleCheckboxChange = (val) => {
+    const newValues = selectedValues.includes(val)
+      ? selectedValues.filter((v) => v !== val)
+      : [...selectedValues, val];
+
+    setSelectedValues(newValues);
+    onChange(newValues);
   };
 
   const filteredOptions = options.filter((opt) =>
@@ -44,61 +42,69 @@ export default function CustomMultiSelect({
     selectedValues.length > 0 ? selectedValues.join(", ") : placeholder;
 
   return (
-    <Menu open={isOpen} handler={setIsOpen}>
-      <MenuHandler>
+    <Popover open={isOpen} handler={setIsOpen} placement="bottom-start">
+      <PopoverHandler>
         <Button
           variant="outlined"
-          className="flex items-center justify-between w-full text-left normal-case"
+          className="flex items-center justify-between w-full normal-case"
         >
-          <Typography className="truncate flex-1">
-            {displayText}
-          </Typography>
+          <Typography className="truncate flex-1">{displayText}</Typography>
           <ChevronDownIcon
             className={`h-4 w-4 transition-transform ${
               isOpen ? "rotate-180" : ""
             }`}
           />
         </Button>
-      </MenuHandler>
+      </PopoverHandler>
 
-      {/* Wider Dropdown */}
-      <MenuList className="max-h-72 overflow-y-auto min-w-[260px]">
-        <Typography variant="small" className="font-semibold text-gray-700 px-3 py-2 border-b">
-          {label}
-        </Typography>
+      <PopoverContent className="min-w-[280px] max-w-[320px] max-h-[300px] overflow-y-auto p-0">
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 border-b">
+          <Typography variant="small" className="font-semibold text-gray-800">
+            {label}
+          </Typography>
 
-        {/* Search box */}
-        <div className="px-3 py-2 border-b">
+          {/* Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1 rounded hover:bg-gray-200"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="p-3 border-b">
           <Input
             size="sm"
             label="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="!border-gray-300"
           />
         </div>
 
-        {/* Items */}
-        {filteredOptions.length === 0 ? (
-          <div className="p-3 text-gray-500 text-sm">No results</div>
-        ) : (
-          filteredOptions.map((option) => (
-            <MenuItem key={option} className="p-0 hover:bg-transparent">
-              <label className="flex items-center gap-2 p-3 cursor-pointer w-full hover:bg-gray-50">
+        {/* Options */}
+        <div className="p-1">
+          {filteredOptions.length === 0 ? (
+            <div className="p-3 text-center text-gray-500 text-sm">
+              No results
+            </div>
+          ) : (
+            filteredOptions.map((option) => (
+              <label
+                key={option}
+                className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer"
+              >
                 <Checkbox
                   checked={selectedValues.includes(option)}
                   onChange={() => handleCheckboxChange(option)}
-                  className="hover:before:opacity-0"
-                  containerProps={{ className: "p-0" }}
                 />
-                <Typography className="font-normal">
-                  {option}
-                </Typography>
+                <Typography className="text-sm">{option}</Typography>
               </label>
-            </MenuItem>
-          ))
-        )}
-      </MenuList>
-    </Menu>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
