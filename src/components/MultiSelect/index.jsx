@@ -7,7 +7,8 @@ import {
   MenuItem, 
   Checkbox, 
   Button,
-  Typography 
+  Typography,
+  Input
 } from "@material-tailwind/react";
 import { ChevronDownIcon } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function CustomMultiSelect({
 }) {
   const [selectedValues, setSelectedValues] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setSelectedValues(value);
@@ -34,9 +36,12 @@ export default function CustomMultiSelect({
     onChange(newSelectedValues);
   };
 
-  const displayText = selectedValues.length > 0 
-    ? selectedValues.join(", ")
-    : placeholder;
+  const filteredOptions = options.filter((opt) =>
+    opt.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const displayText =
+    selectedValues.length > 0 ? selectedValues.join(", ") : placeholder;
 
   return (
     <Menu open={isOpen} handler={setIsOpen}>
@@ -55,25 +60,44 @@ export default function CustomMultiSelect({
           />
         </Button>
       </MenuHandler>
-      <MenuList className="max-h-64 overflow-y-auto">
+
+      {/* Wider Dropdown */}
+      <MenuList className="max-h-72 overflow-y-auto min-w-[260px]">
         <Typography variant="small" className="font-semibold text-gray-700 px-3 py-2 border-b">
           {label}
         </Typography>
-        {options.map((option) => (
-          <MenuItem key={option} className="p-0 hover:bg-transparent">
-            <label className="flex items-center gap-2 p-3 cursor-pointer w-full hover:bg-gray-50">
-              <Checkbox
-                checked={selectedValues.includes(option)}
-                onChange={() => handleCheckboxChange(option)}
-                className="hover:before:opacity-0"
-                containerProps={{ className: "p-0" }}
-              />
-              <Typography className="font-normal">
-                {option}
-              </Typography>
-            </label>
-          </MenuItem>
-        ))}
+
+        {/* Search box */}
+        <div className="px-3 py-2 border-b">
+          <Input
+            size="sm"
+            label="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="!border-gray-300"
+          />
+        </div>
+
+        {/* Items */}
+        {filteredOptions.length === 0 ? (
+          <div className="p-3 text-gray-500 text-sm">No results</div>
+        ) : (
+          filteredOptions.map((option) => (
+            <MenuItem key={option} className="p-0 hover:bg-transparent">
+              <label className="flex items-center gap-2 p-3 cursor-pointer w-full hover:bg-gray-50">
+                <Checkbox
+                  checked={selectedValues.includes(option)}
+                  onChange={() => handleCheckboxChange(option)}
+                  className="hover:before:opacity-0"
+                  containerProps={{ className: "p-0" }}
+                />
+                <Typography className="font-normal">
+                  {option}
+                </Typography>
+              </label>
+            </MenuItem>
+          ))
+        )}
       </MenuList>
     </Menu>
   );
