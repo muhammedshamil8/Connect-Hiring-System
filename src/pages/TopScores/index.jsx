@@ -55,6 +55,7 @@ export default function TopScores() {
         s1: s.TOTAL_S1 || 0,
         s2: s.TOTAL_S2 || 0,
         s3: s.TOTAL_S3 || 0,
+        withoutS1: (s.TOTAL_S2 || 0) + (s.TOTAL_S3 || 0) + (s.Bonus_Participation || 0),
         final: s.FINAL_TOTAL || 0,
       };
     });
@@ -92,6 +93,7 @@ export default function TopScores() {
                 <th className="p-2">S2 (35)</th>
                 <th className="p-2">S3 (35)</th>
                 <th className="p-2">Final (105)</th>
+                <th className="p-2">without S1(75)</th>
               </tr>
             </thead>
 
@@ -105,6 +107,7 @@ export default function TopScores() {
                   <td className="p-2 text-center">{r.s2}</td>
                   <td className="p-2 text-center">{r.s3}</td>
                   <td className="p-2 font-bold text-indigo-700 text-center">{r.final}</td>
+                  <td className="p-2 font-bold text-indigo-700 text-center">{r.withoutS1}</td>
                 </tr>
               ))}
             </tbody>
