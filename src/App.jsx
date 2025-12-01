@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 import './assets/styles/index.css'
 import { AuthProvider } from "./context/AuthContext";
-import { Login, Add, List , NotFound  } from "./pages";
+import { Login, Add, List , NotFound , TopScores } from "./pages";
 import AdminLayout from "./layout/AdminLayout";
 
 
@@ -16,6 +16,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Navigate to="/admin/list" /> },
       { path: "/admin/add", element: <Add /> },
+      { path: "/admin/topscores", element: <TopScores /> },
       { path: "/admin/list", element: <List /> },
     ],
   },

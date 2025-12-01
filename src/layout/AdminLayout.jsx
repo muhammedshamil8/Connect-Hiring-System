@@ -28,6 +28,7 @@ function AdminLayout() {
         <nav className='flex items-center gap-4 p-4'>
           {user  && <>
             <Link to='/admin/add' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/add' ? 'text-blue-500' : 'text-gray-500'}`}>Add Score</Link>
+            <Link to='/admin/topscores' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/topscores' ? 'text-blue-500' : 'text-gray-500'}`}>Top Scores</Link>
             <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link></>}
 
           <button onClick={handleOpen} className=' text-red-500 hover:text-red-300 transition-all ease-in-out font-bold py-2 px-4 rounded'>
