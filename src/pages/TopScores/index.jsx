@@ -85,18 +85,20 @@ export default function TopScores() {
           <table className="w-full border text-sm">
             <thead className="bg-gray-100">
               <tr>
+                <th className="p-2">#</th>
                 <th className="p-2">Chest</th>
                 <th className="p-2">Name</th>
-                <th className="p-2">S1</th>
-                <th className="p-2">S2</th>
-                <th className="p-2">S3</th>
-                <th className="p-2">Final</th>
+                <th className="p-2">S1 (30)</th>
+                <th className="p-2">S2 (35)</th>
+                <th className="p-2">S3 (35)</th>
+                <th className="p-2">Final (105)</th>
               </tr>
             </thead>
 
             <tbody>
               {rows.map((r, i) => (
                 <tr key={i} className="border-b hover:bg-gray-50">
+                  <td className="p-2 font-semibold text-center">{i + 1}</td>
                   <td className="p-2 font-semibold text-center">{r.chestNo}</td>
                   <td className="p-2 ">{r.name}</td>
                   <td className="p-2 text-center">{r.s1}</td>
