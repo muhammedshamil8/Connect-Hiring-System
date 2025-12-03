@@ -43,7 +43,7 @@ const ProfileCard = ({ student }) => (
 );
 
 const StageTab = ({ title, criteria }) => {
-  const subtotal = sum(criteria.map((c) => clamp(c.value)));
+  const subtotal = sum(criteria.map((c) => clamp(c.value, 0, c.max)));
   const max = sum(criteria.map((c) => c.max));
 
   return (
@@ -76,6 +76,7 @@ const StageTab = ({ title, criteria }) => {
     </div>
   );
 };
+
 
 const TaskCard = ({ task }) => {
   const link = Array.isArray(task.Task_Link)
@@ -239,7 +240,6 @@ export default function ViewData() {
   };
 
   const s1Criteria = buildCriteria(student?.scores || {}, S1_SCHEMA);
-  console.log(s1Criteria)
   const s2Criteria = buildCriteria(student?.scores || {}, S2_SCHEMA);
   const s3Criteria = buildCriteria(student?.scores || {}, S3_SCHEMA);
 

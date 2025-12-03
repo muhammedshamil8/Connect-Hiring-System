@@ -43,7 +43,7 @@ const ProfileCard = ({ student }) => (
 );
 
 const StageTab = ({ title, criteria }) => {
-  const subtotal = sum(criteria.map((c) => clamp(c.value)));
+  const subtotal = sum(criteria.map((c) => clamp(c.value, 0, c.max)));
   const max = sum(criteria.map((c) => c.max));
 
   return (
@@ -76,6 +76,7 @@ const StageTab = ({ title, criteria }) => {
     </div>
   );
 };
+
 
 const TaskCard = ({ task }) => {
   const link = Array.isArray(task.Task_Link)
@@ -214,11 +215,12 @@ export default function SelectionViewer() {
         Array.isArray(form.CHEST_NO) ? form.CHEST_NO[0] : form.CHEST_NO;
 
       const totals = {
-        s1: sum(S1_SCHEMA.map((s) => clamp(scores[s.key]))),
-        s2: sum(S2_SCHEMA.map((s) => clamp(scores[s.key]))),
-        s3: sum(S3_SCHEMA.map((s) => clamp(scores[s.key]))),
+        s1: sum(S1_SCHEMA.map((s) => clamp(scores[s.key], 0, s.max))),
+        s2: sum(S2_SCHEMA.map((s) => clamp(scores[s.key], 0, s.max))),
+        s3: sum(S3_SCHEMA.map((s) => clamp(scores[s.key], 0, s.max))),
         bonus: clamp(scores.Bonus_Participation, 0, 5),
       };
+
       totals.grand = totals.s1 + totals.s2 + totals.s3 + totals.bonus;
 
       setStudent({
@@ -251,18 +253,17 @@ export default function SelectionViewer() {
             <button
               key={m}
               onClick={() => setSearchMode(m)}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
-                searchMode === m
+              className={`px-4 py-2 rounded-full text-sm font-medium ${searchMode === m
                   ? "bg-indigo-700 text-white"
                   : "bg-gray-200 text-gray-800"
-              }`}
+                }`}
             >
               {m === "chest" ? "Chest No" : "Admission No"}
             </button>
           ))}
 
-            {/* Add Scores Btn */}
-            {/* <div className="flex justify-end">
+          {/* Add Scores Btn */}
+          {/* <div className="flex justify-end">
               <button
                 onClick={() => navigate("/admin/add")}
                 className="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
@@ -276,9 +277,8 @@ export default function SelectionViewer() {
         <div className="flex gap-2">
           <input
             className="flex-1 p-3 rounded-lg border"
-            placeholder={`Search by ${
-              searchMode === "chest" ? "Chest No" : "Admission No"
-            }`}
+            placeholder={`Search by ${searchMode === "chest" ? "Chest No" : "Admission No"
+              }`}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && getStudent()}
@@ -301,7 +301,7 @@ export default function SelectionViewer() {
         {/* Student Found */}
         {student && student.form && (
           <>
-          
+
 
             <ProfileCard student={student} />
 
@@ -342,11 +342,10 @@ export default function SelectionViewer() {
                 <button
                   key={key}
                   onClick={() => setTab(key)}
-                  className={`px-4 py-2 rounded-lg ${
-                    tab === key
+                  className={`px-4 py-2 rounded-lg ${tab === key
                       ? "bg-indigo-700 text-white"
                       : "bg-gray-200 text-gray-700"
-                  }`}
+                    }`}
                 >
                   {label}
                 </button>
@@ -380,8 +379,8 @@ export default function SelectionViewer() {
         {/* if not search starting  */}
         {!student && !loading && (
           <div className="text-center py-10 text-gray-600">
-           {/* need a creative */}
-           Find the candidate selection details by searching above.
+            {/* need a creative */}
+            Find the candidate selection details by searching above.
           </div>
         )}
       </div>
