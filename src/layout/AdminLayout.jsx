@@ -29,7 +29,13 @@ function AdminLayout() {
           {user  && <>
             <Link to='/admin/add' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/add' ? 'text-blue-500' : 'text-gray-500'}`}>Add Score</Link>
             <Link to='/admin/topscores' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/topscores' ? 'text-blue-500' : 'text-gray-500'}`}>Top Scores</Link>
-            <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link></>}
+            <Link to='/admin/list' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link>
+            <a 
+              href='https://sharp-bobcat-af1.notion.site/Intern-Selection-Evaluation-Criteria-28eb14a57c4e803391f6d15146f6d01b'
+            className={`font-bold transition-all ease-in-out hover:text-blue-300 `}>Criteria</a>
+            </>
+          }
+            
 
           <button onClick={handleOpen} className=' text-red-500 hover:text-red-300 transition-all ease-in-out font-bold py-2 px-4 rounded'>
             <LogOut />
