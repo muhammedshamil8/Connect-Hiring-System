@@ -1,8 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import AuthRoleRequire from '@/components/router/Authrole';
-import { useAuth } from '@/context/AuthContext';
 import Logo from '@/assets/icons/connect.svg';
-import { LogOut } from 'lucide-react';
 import Footer from '@/components/Footer';
 import {
   Button,
@@ -11,25 +8,17 @@ import {
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
-import { useState } from 'react';
 
 function PublicLayout() {
-  const authContext = useAuth();
-  const { user,  handleSignOut } = authContext || {};
   const navigate = useNavigate();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
 
-  const handleOpen = () => setOpen(!open);
   return (
-    <AuthRoleRequire>
     <>
       <div className='flex items-center justify-end p-2'>
         <nav className='flex items-center gap-4 p-4'>
-          {user  && <>
             <Link to='/ranklist' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/topscores' ? 'text-blue-500' : 'text-gray-500'}`}>Rank List</Link>
-            <Link to='/viewdata' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link></>}
-
+            <Link to='/viewdata' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link>
         </nav>
       </div>
 
@@ -51,29 +40,7 @@ function PublicLayout() {
         </div>
       </div>
 
-      <Dialog open={open} handler={handleOpen}>
-        <DialogHeader>
-          <h5 className="text-2xl font-bold">Are you sure?</h5>
-        </DialogHeader>
-        <DialogBody>
-          Do you really want to logout?
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            variant="text"
-            color="red"
-            onClick={handleOpen}
-            className="mr-1"
-          >
-            <span>Cancel</span>
-          </Button>
-          <Button variant="gradient" color="green" onClick={handleSignOut}>
-            <span>Confirm</span>
-          </Button>
-        </DialogFooter>
-      </Dialog>
       </>
-    </AuthRoleRequire>
   );
 }
 
