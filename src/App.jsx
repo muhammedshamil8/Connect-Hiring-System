@@ -34,7 +34,7 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { path: "", element: <Navigate to="list" /> },
-      { path: "add", element: <Add /> },
+      // { path: "add", element: <Add /> },
       { path: "topscores", element: <TopScores /> },
       { path: "list", element: <List /> },
     ],
