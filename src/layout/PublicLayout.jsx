@@ -17,8 +17,8 @@ function PublicLayout() {
     <>
       <div className='flex items-center justify-end p-2'>
         <nav className='flex items-center gap-4 p-4'>
-            <Link to='/ranklist' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/topscores' ? 'text-blue-500' : 'text-gray-500'}`}>Rank List</Link>
-            <Link to='/viewdata' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/admin/list' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link>
+            <Link to='/ranklist' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/ranklist' ? 'text-blue-500' : 'text-gray-500'}`}>Rank List</Link>
+            <Link to='/viewdata' className={`font-bold transition-all ease-in-out hover:text-blue-300 ${location.pathname === '/viewdata' ? 'text-blue-500' : 'text-gray-500'}`}>View Score</Link>
         </nav>
       </div>
 
