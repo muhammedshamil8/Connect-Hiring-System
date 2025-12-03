@@ -89,7 +89,7 @@ export default function TopScores() {
                 <th className="p-2">S2 (35)</th>
                 <th className="p-2">S3 (35)</th>
                 <th className="p-2">Final (105)</th>
-                <th className="p-2">without S1(75)</th>
+                {/* <th className="p-2">without S1(75)</th> */}
               </tr>
             </thead>
 
@@ -103,7 +103,7 @@ export default function TopScores() {
                   <td className="p-2 text-center">{r.s2}</td>
                   <td className="p-2 text-center">{r.s3}</td>
                   <td className="p-2 font-bold text-indigo-700 text-center">{r.final}</td>
-                  <td className="p-2 font-bold text-indigo-700 text-center">{r.withoutS1}</td>
+                  {/* <td className="p-2 font-bold text-indigo-700 text-center">{r.withoutS1}</td> */}
                 </tr>
               ))}
             </tbody>
