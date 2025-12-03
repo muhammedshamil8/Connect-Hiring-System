@@ -25,6 +25,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <PublicLayout />,
     children: [
+      { path: "/", element: <PublicRankList /> },
       { path: "/ranklist", element: <PublicRankList /> },
       { path: "/viewdata", element: <ViewData /> },
     ],
