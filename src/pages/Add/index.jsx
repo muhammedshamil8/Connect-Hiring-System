@@ -88,16 +88,19 @@ const ScoreInput = React.memo(function ScoreInput({
               className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[100px]"
             >
               <option value="">Select score</option>
-              {Array.from({ length: criterion.max / 0.5 + 1 }, (_, i) => {
-                const value = i * 0.5;
-                return (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                );
-              })}
-
+              {Array.from(
+                { length: Math.floor(criterion.max / 0.5) + 1 },
+                (_, i) => {
+                  const score = (i * 0.5).toFixed(1); // ensures .5 increments are shown correctly
+                  return (
+                    <option key={score} value={score}>
+                      {score}
+                    </option>
+                  );
+                }
+              )}
             </select>
+
             <Typography
               variant="small"
               className="text-center text-gray-500 mt-1"
@@ -486,7 +489,7 @@ export default function ScoreFormFixed() {
   );
 
   const handleScoreChange = useCallback((criterionKey, value) => {
-    const numValue = value !== "" ? parseInt(value, 10) : "";
+    const numValue = value !== "" ? parseFloat(value, 10) : "";
     setScores((prev) => ({ ...prev, [criterionKey]: numValue }));
   }, []);
 
@@ -623,8 +626,8 @@ export default function ScoreFormFixed() {
                   variant={searchMode === "chest" ? "filled" : "text"}
                   onClick={() => setSearchMode("chest")}
                   className={`rounded-full ${searchMode === "chest"
-                      ? "bg-indigo-700"
-                      : "bg-transparent text-gray-700"
+                    ? "bg-indigo-700"
+                    : "bg-transparent text-gray-700"
                     }`}
                 >
                   Chest No
@@ -633,8 +636,8 @@ export default function ScoreFormFixed() {
                   variant={searchMode === "admission" ? "filled" : "text"}
                   onClick={() => setSearchMode("admission")}
                   className={`rounded-full ${searchMode === "admission"
-                      ? "bg-indigo-700"
-                      : "bg-transparent text-gray-700"
+                    ? "bg-indigo-700"
+                    : "bg-transparent text-gray-700"
                     }`}
                 >
                   Admission No
