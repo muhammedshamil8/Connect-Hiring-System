@@ -4,9 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { Loader } from "lucide-react";
 
 const AuthRoleRequire = ({ children }) => {
-  const { user, loading } = useAuth(); // -> FIX: include loading from context
+  const { user, loading } = useAuth();
 
-  // Still loading Firebase auth state
   if (loading) {
     return (
       <div className="fixed inset-0 bg-white dark:bg-slate-900 flex flex-col items-center justify-center z-50">
@@ -16,12 +15,10 @@ const AuthRoleRequire = ({ children }) => {
     );
   }
 
-  // Not logged in → redirect
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Logged in → allow page
   return children;
 };
 

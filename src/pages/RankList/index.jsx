@@ -17,13 +17,11 @@ export default function PublicRankList() {
             const scoreRecs = await base("Scores").select().all();
             const internRecs = await base("interns_selection_2025").select().all();
 
-            // scoreMap: recordId => score fields
             const scoreMap = {};
             scoreRecs.forEach((r) => {
                 scoreMap[r.id] = r.fields;
             });
 
-            // internNameMap: chestNumber => { name, department }
             const internMap = {};
 
             internRecs.forEach((r) => {
@@ -89,18 +87,16 @@ export default function PublicRankList() {
 
                         <tbody>
                             {rows.map((r, i) => {
-                                // rank starts from 1
                                 const rank = i + 1;
 
-                                // Decide background color
                                 let bg = "";
 
                                 if (r.final === 0) {
-                                    bg = "bg-red-50 bg-opacity-75";           // score 0 = red
+                                    bg = "bg-red-50 bg-opacity-75";           
                                 } else if (rank <= 12) {
-                                    bg = "bg-green-50 bg-opacity-75";         // top 12 = green
+                                    bg = "bg-green-50 bg-opacity-75";       
                                 } else {
-                                    bg = "bg-yellow-50 bg-opacity-75";        // rest = yellow
+                                    bg = "bg-yellow-50 bg-opacity-75";       
                                 }
 
                                 return (

@@ -1,4 +1,3 @@
-// ScoreFormFixed.jsx
 import React, { useState, useCallback, useMemo } from "react";
 import Airtable from "airtable";
 import backendUrl from "@/const/backendUrl";
@@ -21,7 +20,6 @@ const base = new Airtable({ apiKey: `${backendUrl.secretKey}` }).base(
   `${backendUrl.airtableBase}`
 );
 
-// List of evaluators/interns
 const EVALUATORS = [
   "Shamil",
   "Dayyan",
@@ -50,9 +48,7 @@ const EVALUATORS = [
   "Fabin",
 ];
 
-// ---------------------
-// Child components (moved outside to preserve focus)
-// ---------------------
+
 
 const ScoreInput = React.memo(function ScoreInput({
   criterion,
@@ -61,7 +57,6 @@ const ScoreInput = React.memo(function ScoreInput({
   onScoreChange,
   onReasonChange,
 }) {
-  // local handler wrappers keep stable references
   const handleSelect = useCallback(
     (e) => onScoreChange(criterion.key, e.target.value),
     [onScoreChange, criterion.key]
@@ -224,9 +219,7 @@ const StageSection = React.memo(function StageSection({
   );
 });
 
-// ---------------------
-// Main component
-// ---------------------
+
 
 export default function ScoreFormFixed() {
   const navigate = useNavigate();
@@ -430,7 +423,6 @@ export default function ScoreFormFixed() {
             }
           });
 
-          // Pre-fill evaluators as arrays
           if (scoresRec.S1_Evaluators) {
             existingEvaluators.S1_Evaluators = Array.isArray(
               scoresRec.S1_Evaluators
@@ -585,7 +577,6 @@ export default function ScoreFormFixed() {
         toast.success(`${getStageName(stage)} saved successfully!`);
       } catch (error) {
         console.error(`Error saving ${stage}:`, error);
-        // Airtable errors may have .response or message
         toast.error(
           `Error saving ${getStageName(stage)}: ${error?.message || "Unknown error"
           }`
@@ -621,7 +612,6 @@ export default function ScoreFormFixed() {
     <div className="w-full p-4">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-6xl mx-auto">
-        {/* Search Section */}
         <Card className="mb-6">
           <CardBody className="!pt-0">
             <div className="text-xl font-bold mb-4 text-center">

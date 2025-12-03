@@ -14,17 +14,14 @@ export default function TopScores() {
   setLoading(true);
 
   try {
-    // Load both tables
     const scoreRecs = await base("Scores").select().all();
     const internRecs = await base("interns_selection_2025").select().all();
 
-    // Build score map: recordId → score fields
     const scoreMap = {};
     scoreRecs.forEach((r) => {
       scoreMap[r.id] = r.fields; 
     });
 
-    // Build intern map: chestText → real name
     const internNameMap = {};
 
     internRecs.forEach((r) => {
@@ -39,15 +36,14 @@ export default function TopScores() {
       const scoreLinked = scoreMap[chestLinkId];
       if (!scoreLinked) return;
 
-      const chestText = scoreLinked.CHEST_NO; // actual "CS016"
+      const chestText = scoreLinked.CHEST_NO;
 
       internNameMap[chestText] = f.Name;
     });
 
-    // Now build list from Scores table
     const list = scoreRecs.map((r) => {
       const s = r.fields;
-      const chest = s.CHEST_NO; // actual chest text
+      const chest = s.CHEST_NO;
 
       return {
         chestNo: chest,

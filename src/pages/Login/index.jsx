@@ -55,7 +55,7 @@ const Login = () => {
     return (
         <div className="flex flex-col items-center justify-center  p-4 h-screen">
             <form onSubmit={handleLogin} className="rounded-lg p-8 max-w-md w-full flex-grow  bg-white" ref={parent}>
-                <div className='flex items-center justify-center gap-4 mt-20 mb-16 sm:mb-24'>
+                <div className='flex items-center justify-center gap-4 mt-20 mb-24'>
                     <img src={Logo} className='w-10 h-10 sm:w-[50px] sm:h-[50px] rounded-full' alt='NSS Logo' />
                     <div className='flex flex-col items-center'>
                         <h1 className='text-xl sm:text-2xl font-bold primary-text'>CONNECT HIRING</h1>

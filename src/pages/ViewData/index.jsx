@@ -245,7 +245,6 @@ export default function ViewData() {
     <div className="w-full p-4">
       <div className="max-w-3xl mx-auto space-y-6">
 
-        {/* Search Toggle */}
         <div className="flex gap-3 justify-center mb-4 flex-wrap">
           {["chest", "admission"].map((m) => (
             <button
