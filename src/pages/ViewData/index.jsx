@@ -287,7 +287,7 @@ export default function ViewData() {
             className="px-5 bg-indigo-700 text-white rounded-lg flex items-center gap-2"
           >
             <Search size={18} />
-            Search
+           <span className="hidden sm:block"> Search</span>
           </button>
         </div>
 
