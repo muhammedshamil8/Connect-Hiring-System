@@ -93,11 +93,15 @@ const ScoreInput = React.memo(function ScoreInput({
               className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[100px]"
             >
               <option value="">Select score</option>
-              {Array.from({ length: criterion.max + 1 }, (_, i) => (
-                <option key={i} value={i}>
-                  {i}
-                </option>
-              ))}
+              {Array.from({ length: criterion.max / 0.5 + 1 }, (_, i) => {
+                const value = i * 0.5;
+                return (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                );
+              })}
+
             </select>
             <Typography
               variant="small"
@@ -433,10 +437,10 @@ export default function ScoreFormFixed() {
             )
               ? scoresRec.S1_Evaluators
               : typeof scoresRec.S1_Evaluators === "string"
-              ? scoresRec.S1_Evaluators.split(",")
+                ? scoresRec.S1_Evaluators.split(",")
                   .map((s) => s.trim())
                   .filter(Boolean)
-              : [scoresRec.S1_Evaluators];
+                : [scoresRec.S1_Evaluators];
           }
           if (scoresRec.S2_Evaluators) {
             existingEvaluators.S2_Evaluators = Array.isArray(
@@ -444,10 +448,10 @@ export default function ScoreFormFixed() {
             )
               ? scoresRec.S2_Evaluators
               : typeof scoresRec.S2_Evaluators === "string"
-              ? scoresRec.S2_Evaluators.split(",")
+                ? scoresRec.S2_Evaluators.split(",")
                   .map((s) => s.trim())
                   .filter(Boolean)
-              : [scoresRec.S2_Evaluators];
+                : [scoresRec.S2_Evaluators];
           }
           if (scoresRec.S3_Evaluators) {
             existingEvaluators.S3_Evaluators = Array.isArray(
@@ -455,10 +459,10 @@ export default function ScoreFormFixed() {
             )
               ? scoresRec.S3_Evaluators
               : typeof scoresRec.S3_Evaluators === "string"
-              ? scoresRec.S3_Evaluators.split(",")
+                ? scoresRec.S3_Evaluators.split(",")
                   .map((s) => s.trim())
                   .filter(Boolean)
-              : [scoresRec.S3_Evaluators];
+                : [scoresRec.S3_Evaluators];
           }
 
           if (scoresRec.Bonus_Participation !== undefined) {
@@ -583,8 +587,7 @@ export default function ScoreFormFixed() {
         console.error(`Error saving ${stage}:`, error);
         // Airtable errors may have .response or message
         toast.error(
-          `Error saving ${getStageName(stage)}: ${
-            error?.message || "Unknown error"
+          `Error saving ${getStageName(stage)}: ${error?.message || "Unknown error"
           }`
         );
       } finally {
@@ -629,22 +632,20 @@ export default function ScoreFormFixed() {
                 <Button
                   variant={searchMode === "chest" ? "filled" : "text"}
                   onClick={() => setSearchMode("chest")}
-                  className={`rounded-full ${
-                    searchMode === "chest"
+                  className={`rounded-full ${searchMode === "chest"
                       ? "bg-indigo-700"
                       : "bg-transparent text-gray-700"
-                  }`}
+                    }`}
                 >
                   Chest No
                 </Button>
                 <Button
                   variant={searchMode === "admission" ? "filled" : "text"}
                   onClick={() => setSearchMode("admission")}
-                  className={`rounded-full ${
-                    searchMode === "admission"
+                  className={`rounded-full ${searchMode === "admission"
                       ? "bg-indigo-700"
                       : "bg-transparent text-gray-700"
-                  }`}
+                    }`}
                 >
                   Admission No
                 </Button>
@@ -660,9 +661,8 @@ export default function ScoreFormFixed() {
             <div className="flex items-center gap-3 flex-wrap ">
               <div className="flex-1">
                 <Input
-                  label={`Search by ${
-                    searchMode === "chest" ? "Chest No" : "Admission No"
-                  }`}
+                  label={`Search by ${searchMode === "chest" ? "Chest No" : "Admission No"
+                    }`}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {
