@@ -123,9 +123,14 @@ export default function PublicRankList() {
                 const rank = i + 1;
 
                 let bg = "";
-                if (r.final === 0) bg = "bg-red-50 bg-opacity-75";
-                else if (rank <= 12) bg = "bg-green-50 bg-opacity-75";
-                else bg = "bg-yellow-50 bg-opacity-75";
+                if (r.final === 0) {
+                  bg = "bg-red-50 bg-opacity-75"; 
+                } else if (r.final > 75) {
+                  bg = "bg-green-50 bg-opacity-75"; 
+                } else {
+                  bg = "bg-yellow-50 bg-opacity-75"; 
+                }
+
 
                 return (
                   <tr key={i} className={`${bg} border-b hover:bg-opacity-50`}>
