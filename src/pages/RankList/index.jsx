@@ -78,6 +78,23 @@ export default function PublicRankList() {
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Ranklist 2k26</h1>
 
+      <div className="flex gap-6 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-green-300 border"></div>
+          <span className="text-sm font-medium">Selected</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-yellow-300 border"></div>
+          <span className="text-sm font-medium">Waiting List</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-red-300 border"></div>
+          <span className="text-sm font-medium">Rejected</span>
+        </div>
+      </div>
+
       <input
         type="text"
         placeholder="Search by chest, name or department"
@@ -85,6 +102,7 @@ export default function PublicRankList() {
         onChange={(e) => setSearch(e.target.value)}
         className="w-full p-2 border rounded mb-4"
       />
+
 
       {loading && <div className="text-center py-10">Loading...</div>}
 
